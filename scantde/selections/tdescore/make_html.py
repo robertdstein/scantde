@@ -135,17 +135,6 @@ def base_html_header(
         </head>
         <body>
     
-        <script>
-        var password = "#tdescanningO4";
-        (function passcodeprotect() {
-            var passcode = prompt("Enter PassCode");
-            while (passcode !== password) {
-                alert("Incorrect PassCode");
-                return passcodeprotect();
-            }
-        }());
-        </script>
-    
         """
             + f"""
     {link_text}
@@ -390,8 +379,6 @@ def format_processing_log(log: list[dict]) -> str:
 
     log_df["Missed TDEs"] = missed_tdes
 
-    print(log_df)
-
     html = """
     <b>Processing Log:</b>
     <div>
@@ -423,7 +410,9 @@ def format_processing_log(log: list[dict]) -> str:
 def make_html_table(
     source_table: pd.DataFrame,
     html_header: str,
+    prefix: str = "",
     output_path: Path | None = None,
+    base_output_dir: Path | None = None,
     proc_log: Optional[list[dict]] = None,
     classifiers: list[str] | None = None,
 ) -> str:
@@ -432,7 +421,9 @@ def make_html_table(
 
     :param source_table: pd.DataFrame Table of sources
     :param html_header: str HTML header
+    :param prefix: str Prefix for paths
     :param output_path: Path Output path
+    :param base_output_dir: Path Base output directory
     :param proc_log: list[dict] Processing log
     :param classifiers: list[str] Classifiers to use
     :return: str HTML
@@ -444,10 +435,15 @@ def make_html_table(
     html = html_header
     html += "<table>"
 
+    if base_output_dir is None:
+        base_output_dir = output_path.parent
+
     for i, row in tqdm(source_table.iterrows(), total=len(source_table)):
         count_line = f"({i+1}/{len(source_table)})"
         html += make_html_single(
-            row, base_output_dir=output_path.parent, count_line=count_line,
+            row, base_output_dir=base_output_dir,
+            prefix=prefix,
+            count_line=count_line,
             classifiers=classifiers
         )
 
@@ -469,6 +465,8 @@ def make_html_table(
 def make_daily_html_table(
     source_table: pd.DataFrame,
     output_dir: Path,
+    prefix: str = "",
+    base_output_dir: Path | None = None,
     proc_log: Optional[list[dict]] = None,
     classifiers: list[str] | None = None,
     table_name: str = TDESCORE_HTML_NAME,
@@ -478,18 +476,22 @@ def make_daily_html_table(
 
     :param source_table: pd.DataFrame Table of sources
     :param output_dir: Path Output directory
+    :param prefix: str Prefix for paths
+    :param base_output_dir: Path Base output directory
     :param proc_log: list[dict] Processing log
     :param classifiers: list[str] Classifiers to use
     :param table_name: str Name of the HTML file
     :return: str HTML
     """
     datestr = output_dir.name
+
     output_path = TDESCORE_HTML_DIR / datestr / table_name
 
     html_header = make_html_daily_header(datestr, source_table, output_path)
 
     html = make_html_table(
-        source_table, html_header, output_path, proc_log, classifiers
+        source_table, html_header, prefix=prefix,
+        output_path=output_path, base_output_dir=base_output_dir, proc_log=proc_log, classifiers=classifiers
     )
 
     return html
