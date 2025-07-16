@@ -1,14 +1,11 @@
-from flask import Blueprint, Flask, request, render_template_string
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import MetaData, Table, select
-from scantde.database.search import query_by_name, generate_html_by_name
-from scantde.selections.tdescore.make_html import TDESCORE_HTML_DIR
-from pathlib import Path
-from scantde.paths import sym_dir
-from scantde.server.index import HEADER_HTML
+import pandas as pd
+from flask import Blueprint, request, render_template_string
+from scantde.database.search import query_by_name
+from scantde.html.generate import generate_html_by_name
+from scantde.html.header import base_html_header
+from scantde.server.index import DEFAULT_HTML
 
-from scantde.paths import db_path
-#
+
 # app = Flask(
 #     __name__,
 #     static_folder=str(sym_dir)
@@ -16,32 +13,32 @@ from scantde.paths import db_path
 # app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 # db = SQLAlchemy(app)
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
 name_bp = Blueprint('name', __name__)
 
 
-@name_bp.route('/search_by_name', methods=['GET', 'POST'])
+@name_bp.route('/search_by_name', methods=['GET'])
 def search_by_name():
+    name = request.args.get('name', '').strip()
     row = None
     columns = []
-    error = None
+    error = ""
     extra_html = ""
-    if request.method == 'POST':
-        value = request.form['value'].strip()
-        if value:
-            res = query_by_name(value)
-            if res is not None:
-                columns = sorted(res.index.tolist())
-                row = res
-                extra_html = generate_html_by_name(value)
-            else:
-                error = f"No result found for {value}"
+    if name:
+        res = query_by_name(name)
+        if res is not None:
+            columns = sorted(res.index.tolist())
+            row = res
+            extra_html = generate_html_by_name(name)
         else:
-            error = "Please enter a name."
-    html = HEADER_HTML + '''
+            error = f"No result found for {name}"
+    else:
+        error = "Please enter a name."
+    html = DEFAULT_HTML + '''
     {{ extra_html|safe }}
     {% if row is not none %}
+    <h2>Database Results for: {{ row['name'] }}</h2>
       <table border="1">
         <tr><th>Field</th><th>Value</th></tr>
         {% for col in columns %}

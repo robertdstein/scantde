@@ -7,7 +7,7 @@ import logging
 import datetime
 import subprocess
 from slack_sdk import WebClient
-from scantde.selections.tdescore.make_html import TDESCORE_HTML_NAME, INFANT_HTML_NAME, TDESCORE_HTML_DIR
+from scantde.html.make_html import TDESCORE_HTML_NAME, INFANT_HTML_NAME, TDESCORE_HTML_DIR
 
 logger = logging.getLogger(__name__)
 

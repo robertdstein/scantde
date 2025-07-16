@@ -4,16 +4,15 @@ Run the TDEScore integration for a given date
 
 import argparse
 import logging
-import scantde.selections.tdescore
 
+import scantde.selections.tdescore
 # Set the TDESCORE_DATA environment variable to the output directory
-import os
 # from scantde.paths import tdescore_output_dir
 # os.environ["TDESCORE_DATA"] = str(tdescore_output_dir)
 
 from scantde.utils import get_current_datestr
 from scantde.selections.tdescore.io import load_candidates
-from scantde.selections.tdescore.make_html import TDESCORE_HTML_DIR, make_daily_html_table
+from scantde.html.make_html import TDESCORE_HTML_DIR, make_daily_html_table
 from scantde.selections.tdescore.archive import update_archive
 from tdescore.combine.parse import combine_all_sources
 

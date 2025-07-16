@@ -9,6 +9,12 @@ logger = logging.getLogger(__name__)
 
 sqlite_url = f"sqlite:///{db_path}"
 
+def get_engine():
+    """
+    Get the SQLAlchemy engine for the database
+    """
+    return create_engine(sqlite_url, echo=False)
+
 engine = create_engine(sqlite_url, echo=False)
 
 

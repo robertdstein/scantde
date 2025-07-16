@@ -7,7 +7,7 @@ import logging
 import pandas as pd
 
 from scantde.selections.tdescore.io import load_candidates
-from scantde.selections.tdescore.make_html import CLASSIFIERS, make_archive_html_table, TDESCORE_HTML_DIR
+# from scantde.html.make_html import CLASSIFIERS, make_archive_html_table, TDESCORE_HTML_DIR
 from tdescore.combine.parse import combine_all_sources
 from astropy import units as u
 

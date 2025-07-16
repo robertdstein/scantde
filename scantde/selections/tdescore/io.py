@@ -1,8 +1,7 @@
 from pathlib import Path
-import json
 import pandas as pd
 import logging
-from scantde.selections.tdescore.make_html import TDESCORE_HTML_DIR
+from scantde.html.make_html import TDESCORE_HTML_DIR
 from scantde.paths import get_night_output_dir
 
 logger = logging.getLogger(__name__)

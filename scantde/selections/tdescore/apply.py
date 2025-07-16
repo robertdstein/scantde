@@ -44,11 +44,11 @@ from tdescore.lightcurve.thermal import (
 )
 
 from scantde.selections.tdescore.classifiers import apply_classifier
-from scantde.selections.tdescore.make_html import make_daily_html_table, INFANT_HTML_NAME
+from scantde.html.make_html import make_daily_html_table, INFANT_HTML_NAME
 from scantde.selections.tdescore.plot import create_lightcurve_plots
 from scantde.utils.skyportal import export_to_skyportal, download_from_skyportal
 from scantde.selections.tdescore.io import save_candidates, save_results
-from scantde.selections.tdescore.archive import update_archive
+# from scantde.selections.tdescore.archive import update_archive
 from astropy.coordinates import SkyCoord
 
 from scantde.database import update_source_table
@@ -474,33 +474,33 @@ def apply_tdescore(
         df.reset_index(drop=True, inplace=True)
         full_df = combine_all_sources(df, save=False)
 
-        logger.info("Making HTML table")
-        make_daily_html_table(full_df, base_output_dir, proc_log)
+        # logger.info("Making HTML table")
+        # make_daily_html_table(full_df, base_output_dir, proc_log)
 
         export_to_skyportal(full_df)
 
         logger.info(df)
 
 
-        # Create a subset of young transients
-        mask = full_df["age"] < 14.0
-        if mask.sum() == 0:
-            logger.warning("No young transients found")
-            return
-
-        df = df[mask].copy().reset_index(drop=True)
-        full_df = combine_all_sources(df, save=False)
-
-        proc_log.append({
-            "stage": "Algorithmic cuts - age",
-            "n_sources": mask.sum(),
-            "tdes": list(set([row["ztf_name"] for _, row in df.iterrows() if row["is_tde"]]))
-        })
-        make_daily_html_table(full_df, base_output_dir, proc_log, table_name=INFANT_HTML_NAME)
+        # # Create a subset of young transients
+        # mask = full_df["age"] < 14.0
+        # if mask.sum() == 0:
+        #     logger.warning("No young transients found")
+        #     return
+        #
+        # df = df[mask].copy().reset_index(drop=True)
+        # full_df = combine_all_sources(df, save=False)
+        #
+        # proc_log.append({
+        #     "stage": "Algorithmic cuts - age",
+        #     "n_sources": mask.sum(),
+        #     "tdes": list(set([row["ztf_name"] for _, row in df.iterrows() if row["is_tde"]]))
+        # })
+        # make_daily_html_table(full_df, base_output_dir, proc_log, table_name=INFANT_HTML_NAME)
 
     except NoSourcesError:
         logger.warning("Terminated early due to lack of sources")
 
-    update_archive(datestr)
+    # update_archive(datestr)
 
 

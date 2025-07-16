@@ -3,7 +3,7 @@ Run the TDEScore selection for a given date
 """
 import logging
 from scantde.selections.tdescore.apply import apply_tdescore
-from scantde.selections.tdescore.make_html import TDESCORE_HTML_DIR
+from scantde.html.make_html import TDESCORE_HTML_DIR
 
 logger = logging.getLogger(__name__)
 
