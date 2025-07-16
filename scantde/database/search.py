@@ -2,8 +2,6 @@ from sqlmodel import Session, select
 from scantde.database.create import engine, NuclearSource
 import pandas as pd
 from scantde.selections.tdescore.io import load_results
-from scantde.html.make_html import make_html_single, make_daily_html_table
-from scantde.paths import sym_dir
 
 
 

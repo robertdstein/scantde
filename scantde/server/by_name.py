@@ -48,7 +48,7 @@ def search_by_name():
     {% endif %}
     <p style="color:red;">{{ error }}</p>
     '''
-    return render_template_string(html, row=row, columns=columns, error=error, extra_html=extra_html, today=datetime.now().strftime('%Y-%m-%d'))
+    return render_template_string(html, row=row, columns=columns, error=error, extra_html=extra_html, today=datetime.now().strftime('%Y-%m-%d'), name=name)
 
 # if __name__ == '__main__':
 #     app.run(debug=True)

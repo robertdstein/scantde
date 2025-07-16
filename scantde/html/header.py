@@ -111,13 +111,13 @@ def base_html_header(
         <font size="4">Search For Sources</font>
         </br>
         <form id="searchByNameForm" method="get" action="/search_by_name">
-          Load Source Page: <input id="nameInput" name="name">
+          Load Source Page: <input id="nameInput" name="name" value="{{ name or '' }}" style="width:200px;">
           <button type="submit">Search by Name</button>
         </form>
         <br>
         <form method="get" action="/search_by_date">
-          Search Sources by Date: <input type="date" name="date" value="{{ today }}">
-          Lookback Days: <input type="number" name="lookback_days" min="1" value="1">
+          Search by Date: <input type="date" name="date" value="{{ today }}">
+          Lookback Days: <input type="number" name="lookback_days" min="1" value="{{ lookback_days or 1 }}" style="width:60px;">
           <button type="submit">Search by Date</button>
         </form>
         <br>
