@@ -60,19 +60,42 @@ def generate_html_by_name(name: str) -> str:
     )
     return html
 
-
-def generate_html_by_date(datestr: str) -> str:
+def load_df(datestr: str) -> pd.DataFrame:
     """
-    Generate HTML for a source by name
+    Load a DataFrame for a given date string
 
     :param datestr: str date string in 'YYYYMMDD' format
-    :return: HTML string
+    :return: DataFrame of results
     """
     df = load_results(datestr)
     mask = df["tdescore"] > 0.01
     df = df[mask]
     df.reset_index(inplace=True, drop=True)
     df["datestr"] = datestr
+    return df
+
+
+def generate_html_by_date(datestr: str, lookback_days: int = 1) -> str:
+    """
+    Generate HTML for a source by name
+
+    :param datestr: str date string in 'YYYYMMDD' format
+    :param lookback_days: int number of days to look back
+    :return: HTML string
+    """
+    df = load_df(datestr)
+
+    if lookback_days > 1:
+        old_dates = [
+            (pd.to_datetime(datestr) - pd.Timedelta(days=i)).strftime('%Y%m%d')
+            for i in range(1, lookback_days)
+        ]
+        all_dfs = []
+        for date in old_dates:
+            old_df = load_df(date)
+            mask = ~old_df["name"].isin(df["name"])
+            print(old_df, mask, mask.sum(), ~mask.sum())
+        print(old_dates)
 
     output_dir = sym_dir / "tdescore" / datestr
 

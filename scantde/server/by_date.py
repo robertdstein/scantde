@@ -27,18 +27,18 @@ def search_by_date():
     extra_html = ""
     if request.method == 'POST':
         date_str = request.form.get('date', '').strip()
-        # num_days = int(request.form.get('num_days', '1'))
+        num_days = int(request.form.get('num_days', '1'))
         if date_str:
             try:
                 start_date = datetime.strptime(date_str, '%Y-%m-%d')
                 datestr = start_date.strftime('%Y%m%d')
-                extra_html = generate_html_by_date(datestr)
+                extra_html = generate_html_by_date(datestr, lookback_days=num_days)
                 # end_date = start_date + timedelta(days=num_days)
                 # results = query_by_date(start_date, end_date)
                 # if not results:
                 #     error = f"No results found for {date_str} (+{num_days} days)"
-            # except Exception as e:
-            except KeyboardInterrupt:
+            except Exception as e:
+            # except KeyboardInterrupt:
                 error = f"Invalid date: {e}"
         else:
             error = "Please enter a date."

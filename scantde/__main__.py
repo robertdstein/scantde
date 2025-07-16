@@ -4,6 +4,7 @@ Run the TDEScore integration for a given date
 
 import argparse
 import logging
+import scantde.selections.tdescore
 
 # Set the TDESCORE_DATA environment variable to the output directory
 import os
