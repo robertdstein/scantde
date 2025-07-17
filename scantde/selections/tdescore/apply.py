@@ -328,7 +328,7 @@ def apply_tdescore(
         full_df = combine_all_sources(df, save=False)
 
         # Apply the third classifier which uses early lightcurve data
-        logger.info("Analysing full lightcurve data")
+        logger.info("Analysing lightcurve data for 'full' classifier")
         create_lightcurve_plots(full_df, base_output_dir)
 
         gp_output_dir = base_output_dir / "tdescore/gp"
@@ -393,7 +393,8 @@ def apply_tdescore(
 
             logger.info(f"Analysing thermal data for window {window}")
 
-            mask = df["thermal_window"] == window
+            mask = df["thermal_window"] == window \
+                if window is not None else df["thermal_window"].isnull()
 
             if mask.sum() == 0:
                 logger.info(f"No sources have thermal data for window {window}")
@@ -436,10 +437,11 @@ def apply_tdescore(
         )
         df["tdescore_full"] = np.nan
         df.loc[~nan_mask, ["tdescore_full"]] = scores
-        df.loc[~nan_mask, ["tdescore"]] = scores
-        df.loc[~nan_mask, ["tdescore_best"]] = "full"
         df.loc[high_noise_mask, ["tdescore_full"]] = -1.0
-        df.loc[high_noise_mask, ["tdescore"]] = -1.0
+
+        # df.loc[~nan_mask, ["tdescore"]] = scores
+        # df.loc[~nan_mask, ["tdescore_best"]] = "full"
+        # df.loc[high_noise_mask, ["tdescore"]] = -1.0
 
         df.sort_values(by="tdescore", inplace=True, ascending=False)
 

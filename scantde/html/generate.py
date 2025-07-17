@@ -48,12 +48,18 @@ def load_df(datestr: str) -> pd.DataFrame:
     return df
 
 
-def generate_html_by_date(datestr: str, lookback_days: int = 1) -> str:
+def generate_html_by_date(
+        datestr: str, lookback_days: int = 1,
+        hide_old_infants: bool = False,
+        mode: str = "all"
+) -> str:
     """
     Generate HTML for a source by name
 
     :param datestr: str date string in 'YYYYMMDD' format
     :param lookback_days: int number of days to look back
+    :param hide_old_infants: bool whether to hide old infants
+    :param mode: str mode of operation
     :return: HTML string
     """
     df = load_df(datestr)
@@ -81,6 +87,21 @@ def generate_html_by_date(datestr: str, lookback_days: int = 1) -> str:
 
     df.sort_values(by=["tdescore"], ascending=False, inplace=True)
     df.reset_index(drop=True, inplace=True)
+
+    if hide_old_infants:
+        mask = df["tdescore_best"].isin(["infant", "week", "month"]) & (df["age"] > 14.)
+        df = df[~mask]
+        df.reset_index(drop=True, inplace=True)
+
+    if mode == "infant":
+        mask = df["age"] < 14.
+        df = df[mask]
+        df.reset_index(drop=True, inplace=True)
+
+    elif mode == "non-infant":
+        mask = df["age"] >= 14.
+        df = df[mask]
+        df.reset_index(drop=True, inplace=True)
 
     output_dir = sym_dir / "tdescore" / datestr
 

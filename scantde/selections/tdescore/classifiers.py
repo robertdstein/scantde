@@ -55,8 +55,13 @@ def apply_classifier(
         classifier_name = "full"
         columns = post_peak
     elif "thermal" in classifier:
-        window = float(classifier.split("_")[-1])
-        classifier_name = f"thermal_{window}"
+        window = classifier.split("_")[-1]
+        try:
+            window = float(window)
+            classifier_name = f"thermal_{window:.0f}"
+        except ValueError:
+            window = None
+            classifier_name = "thermal_all"
         columns = get_thermal_columns(window)
     else:
         raise ValueError(f"Unknown classifier: {classifier}")

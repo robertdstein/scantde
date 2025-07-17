@@ -40,17 +40,10 @@ def make_html_single(
     name = row["ztf_name"]
 
     lightcurve_path = f"{prefix}tdescore/lightcurves/{name}.png"
-    shap_path = f"{prefix}tdescore/shap/infant/{name}.png"
-
-    for key in classifiers:
-        label = f"tdescore_{key}"
-        if label in row:
-            if not pd.isnull(row[f"tdescore_{key}"]):
-                shap_path = f"{prefix}tdescore/shap/{key}/{name}.png"
+    shap_path = f"{prefix}tdescore/shap/{row['tdescore_best']}/{name}.png"
 
     classifier_lines = []
 
-    best = False
     for classifier in classifiers[::-1]:
         clf_name = f"tdescore_{classifier}"
 
@@ -59,9 +52,8 @@ def make_html_single(
         if clf_name in row:
             if pd.notnull(row[clf_name]) & (row[clf_name] > 0.0):
                 # Bold the current best
-                if not best:
+                if row["tdescore_best"] == classifier:
                     new_line = f"<b>{classifier}: {row[clf_name]:.3f} </b>"
-                    best = True
                 else:
                     new_line = f"{classifier}: {row[clf_name]:.3f}"
 
@@ -114,7 +106,7 @@ def make_html_single(
                 gp_thermal_ext = new_thermal_ext
                 break
 
-    if gp_path.exists() & pd.notnull(row["tdescore_full"]) & ("full" in classifiers):
+    if gp_path.exists() & (row["tdescore_best"] == "full"):
         gp_line = f'<img src="{gp_ext}" height="250">'
     elif gp_thermal_ext is not None:
         gp_line = f'<img src="{gp_thermal_ext}" height="250">'

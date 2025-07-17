@@ -76,13 +76,16 @@ def export_cut_selection(df: pd.DataFrame, key: str, group_id: int, min_age: flo
 
 
 thermal_export_map = {
-    "30.0": "1734",
-    "60.0": "1735",
-    "90.0": "1736",
+    "14": "1857",
+    "30": "1734",
+    "60": "1735",
+    "90": "1736",
+    "180": "1737",
+    "365": "1858",
 }
 
 cut_export_map = {
-    "thermal_180.0": ["1737", 90., 365.0],
+    "thermal_all": ["1859", 365.0, None],
     "full": ["1738", None, None],
 }
 

@@ -5,14 +5,6 @@ from scantde.html.generate import generate_html_by_name
 from scantde.html.header import base_html_header
 from scantde.server.index import DEFAULT_HTML
 
-
-# app = Flask(
-#     __name__,
-#     static_folder=str(sym_dir)
-# )
-# app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
-# db = SQLAlchemy(app)
-
 from datetime import datetime
 
 name_bp = Blueprint('name', __name__)
@@ -46,7 +38,6 @@ def search_by_name():
         {% endfor %}
       </table>
     {% endif %}
-    <p style="color:red;">{{ error }}</p>
     '''
     return render_template_string(html, row=row, columns=columns, error=error, extra_html=extra_html, today=datetime.now().strftime('%Y-%m-%d'), name=name)
 
