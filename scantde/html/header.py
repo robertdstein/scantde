@@ -87,7 +87,7 @@ def base_html_header(
             Search by Date: <input type="date" name="date" value="{{ today }}">
             Lookback Days: <input type="number" name="lookback_days" min="1" value="{{ lookback_days or 1 }}" style="width:60px;">
             <label class="switch">
-            Hide old 'infants': <input type="checkbox" name="hide_old_infants" {% if hide_old_infants is not defined or hide_old_infants %}checked{% endif %}>
+            Hide junk: <input type="checkbox" name="hide_junk" {% if hide_junk is not defined or hide_junk %}checked{% endif %}>
             </label>
             Scanning Mode:
             <select name="mode">

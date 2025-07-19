@@ -62,7 +62,9 @@ def make_html_single(
     classifier_line = " | ".join(classifier_lines[::-1])
 
     name_line = (
-        rf'<b>{count_line}</b> <a href="search_by_name?name={name}"><b><font size="3">{name}</font></b></a> &nbsp;&nbsp;&nbsp;&nbsp;'
+        rf'<b>{count_line}</b> <a href="search_by_name?name={name}"><b>'
+        rf'<font size="3">{name}</font></b></a>'
+        rf' [junk={row["is_junk"]}] [lcscore={row['tdescore_score']:.2f}]&nbsp;&nbsp;&nbsp;&nbsp;'
     )
 
     name_line += (

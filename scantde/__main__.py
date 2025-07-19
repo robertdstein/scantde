@@ -38,7 +38,7 @@ def run():
         dest="night"
     )
     argparser.add_argument(
-        "-s", "--skip", help="Skip the download", default=False, action="store_true"
+        "-s", "--skip", help="Skip the lightcurve", default=False, action="store_true"
     )
     argparser.add_argument(
         "--debug", help="Run in debug mode", default=False, action="store_true"
@@ -61,7 +61,8 @@ def run():
 
     df = get_ztf_candidates(datestr)
 
-    df["tdescore_lc"] = False
+    df["tdescore_lc"] = args.skip
+
 
     all_known_tdes = get_known_tdes()
     logger.info(f"Have {len(all_known_tdes)} known TDEs")

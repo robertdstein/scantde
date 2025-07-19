@@ -304,10 +304,10 @@ def apply_tdescore(
         # Download all the alert data up to the specific night
         logger.info(f"Downloading full lightcurve data using backend {ZTF_BACKEND}")
         passed_names = download_alert_data(
-            df["ztf_name"], overwrite=True, t_max_jd=t_max_jd
+            df["ztf_name"][~df["tdescore_lc"]], overwrite=True, t_max_jd=t_max_jd
         )
 
-        mask = df["ztf_name"].isin(passed_names)
+        mask = df["ztf_name"].isin(passed_names) | df["tdescore_lc"]
 
         df, proc_log = update_source_list(
             df, proc_log, mask, "Has lightcurve data"
@@ -334,7 +334,7 @@ def apply_tdescore(
         gp_output_dir = base_output_dir / "tdescore/gp"
         gp_output_dir.mkdir(parents=True, exist_ok=True)
         batch_analyse(
-            full_df["ztf_name"],
+            full_df["ztf_name"][~df["tdescore_lc"]],
             overwrite=True,
             include_text=False,
             base_output_dir=gp_output_dir,
@@ -342,7 +342,8 @@ def apply_tdescore(
         )
         # Only run on the full lightcurve data
         batch_sncosmo(
-            full_df["ztf_name"], overwrite=True,
+            full_df["ztf_name"][~df["tdescore_lc"]],
+            overwrite=True,
             windows=[None],
         )
 
@@ -403,14 +404,14 @@ def apply_tdescore(
             logger.info(f"{sum(mask)} sources have thermal data for window {window}")
 
             batch_analyse_thermal(
-                df["ztf_name"][mask],
+                df["ztf_name"][mask & ~df["tdescore_lc"]],
                 overwrite=True,
                 base_output_dir=gp_output_dir,
                 thermal_windows=[window],
             )
             # Run sncosmo on the data in the thermal window
             batch_sncosmo(
-                full_df["ztf_name"][mask], overwrite=True,
+                full_df["ztf_name"][mask & ~df["tdescore_lc"]], overwrite=True,
                 windows=[window],
             )
 
@@ -426,6 +427,8 @@ def apply_tdescore(
             df.loc[~nan_mask, [f"tdescore_thermal_{window}"]] = scores
             df.loc[~nan_mask, ["tdescore"]] = scores
             df.loc[~nan_mask, ["tdescore_best"]] = f"thermal_{window}"
+            df.loc[~nan_mask, ["tdescore_high_noise"]] = full_df[f"thermal_{window}d_high_noise"]
+            df.loc[~nan_mask, ["tdescore_score"]] = full_df[f"thermal_{window}d_score"]
 
         full_df = combine_all_sources(df, save=False)
         high_noise_mask = pd.notnull(full_df["high_noise"]) & full_df["high_noise"]
@@ -450,38 +453,54 @@ def apply_tdescore(
         download_all(df, include_optional=False)
 
         full_df = combine_all_sources(df, save=False)
+
+        # Tag junk
+        old_infant_mask = full_df["tdescore_best"].isin(["infant", "week", "month"]) & (full_df["age"] > 30.0)
+        high_noise_mask = full_df["tdescore_high_noise"]
+        low_score_mask = full_df["tdescore"] < 0.01
+
+        lc_score_mask = (full_df["tdescore_score"] < 0.1) & (
+                full_df["tdescore_best"].isin(["thermal_None", "thermal_365.0", "thermal_180.0"])
+        )
+
+        old_mask = (full_df["age"] > 500.0) & (full_df["tdescore_score"] < 0.5)
+
+        ancient_mask = (full_df["age"] > 1000.0)
+
+        mask = old_infant_mask | high_noise_mask | low_score_mask | lc_score_mask | old_mask | ancient_mask
+        full_df["is_junk"] = False
+        full_df.loc[mask, "is_junk"] = True
+
         save_results(datestr=datestr, result_df=full_df)
         save_candidates(datestr=base_output_dir.name, candidates=df)
 
-        mask = df["tdescore_best"].isin(["infant", "week"]) & (full_df["age"] > 14.0)
-        df, proc_log = update_source_list(
-            df, proc_log, ~mask, "Algorithmic cuts - age", export_db=False
-        )
-
-        logger.info(f"Applying age cut, leaving {len(df)} sources")
-
-        mask = df["tdescore"] > 0.01
-        df, proc_log = update_source_list(
-            df, proc_log, mask, "TDEScore cuts", export_db=False
-        )
-
-        proc_log.append({
-            "stage": "Final",
-            "n_sources": len(df),
-            "tdes": list(set([row["ztf_name"] for _, row in df.iterrows() if row["is_tde"]]))
-        })
-
-        logger.info(f"Applying TDEScore cut, leaving {len(df)} sources")
-
+        df = df[~mask]
         df.reset_index(drop=True, inplace=True)
         full_df = combine_all_sources(df, save=False)
-
-        # logger.info("Making HTML table")
-        # make_daily_html_table(full_df, base_output_dir, proc_log)
-
         export_to_skyportal(full_df)
 
         logger.info(df)
+
+        # mask = df["tdescore_best"].isin(["infant", "week"]) & (full_df["age"] > 14.0)
+        # df, proc_log = update_source_list(
+        #     df, proc_log, ~mask, "Algorithmic cuts - age", export_db=False
+        # )
+        #
+        # logger.info(f"Applying age cut, leaving {len(df)} sources")
+        #
+        # mask = df["tdescore"] > 0.01
+        # df, proc_log = update_source_list(
+        #     df, proc_log, mask, "TDEScore cuts", export_db=False
+        # )
+        #
+        # proc_log.append({
+        #     "stage": "Final",
+        #     "n_sources": len(df),
+        #     "tdes": list(set([row["ztf_name"] for _, row in df.iterrows() if row["is_tde"]]))
+        # })
+        #
+        # logger.info(f"Applying TDEScore cut, leaving {len(df)} sources")
+        #
 
 
         # # Create a subset of young transients

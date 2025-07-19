@@ -41,16 +41,13 @@ def load_df(datestr: str) -> pd.DataFrame:
     :return: DataFrame of results
     """
     df = load_results(datestr)
-    mask = df["tdescore"] > 0.01
-    df = df[mask]
-    df.reset_index(inplace=True, drop=True)
     df["datestr"] = datestr
     return df
 
 
 def generate_html_by_date(
         datestr: str, lookback_days: int = 1,
-        hide_old_infants: bool = False,
+        hide_junk: bool = False,
         mode: str = "all"
 ) -> str:
     """
@@ -58,7 +55,7 @@ def generate_html_by_date(
 
     :param datestr: str date string in 'YYYYMMDD' format
     :param lookback_days: int number of days to look back
-    :param hide_old_infants: bool whether to hide old infants
+    :param hide_junk: bool whether to hide old infants
     :param mode: str mode of operation
     :return: HTML string
     """
@@ -85,23 +82,23 @@ def generate_html_by_date(
                 print(f"File not found for date: {date}")
                 continue
 
-    df.sort_values(by=["tdescore"], ascending=False, inplace=True)
-    df.reset_index(drop=True, inplace=True)
+    # For now, remove low-quality candidates
+    df = df[df["tdescore"] > 0.01]
 
-    if hide_old_infants:
-        mask = df["tdescore_best"].isin(["infant", "week", "month"]) & (df["age"] > 14.)
-        df = df[~mask]
-        df.reset_index(drop=True, inplace=True)
+    if hide_junk:
+        # Remove junk candidates
+        df = df[~df["is_junk"]]
 
     if mode == "infant":
         mask = df["age"] < 14.
         df = df[mask]
-        df.reset_index(drop=True, inplace=True)
 
     elif mode == "non-infant":
         mask = df["age"] >= 14.
         df = df[mask]
-        df.reset_index(drop=True, inplace=True)
+
+    df.sort_values(by=["tdescore"], ascending=False, inplace=True)
+    df.reset_index(drop=True, inplace=True)
 
     output_dir = sym_dir / "tdescore" / datestr
 
