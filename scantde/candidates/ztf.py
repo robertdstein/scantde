@@ -90,6 +90,7 @@ def get_ztf_candidates(
                 "candidate.ra": 1,
                 "candidate.dec": 1,
                 "candidate.jdstarthist": 1,
+                "candidate.jdendhist": 1,
                 'candidate.ssdistnr': 1,
                 'candidate.ndethist': 1,
                 'candidate.neargaiabright': 1,
@@ -108,6 +109,7 @@ def get_ztf_candidates(
     logger.info(f"Query took {t2-t1:.1f} seconds, found {len(candidates)} candidates")
 
     df = pd.DataFrame([val['candidate'] for val in candidates])
+
     names_all = np.array([val['objectId'] for val in candidates])
     df["name"] = names_all
     df["ztf_name"] = names_all

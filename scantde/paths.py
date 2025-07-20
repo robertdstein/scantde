@@ -21,7 +21,16 @@ else:
 tdescore_output_dir = base_output_dir / 'tdescore_output'
 tdescore_output_dir.mkdir(parents=True, exist_ok=True)
 
-db_path = base_output_dir / 'scantde.db'
+
+def get_db_path(selection: str) -> Path:
+    """
+    Get the database path for a given selection type.
+
+    :param selection: Selection type (e.g., 'tdescore')
+    :return: Path to the database file for the given selection
+    """
+    return base_output_dir / f'scantde_{selection}.db'
+
 
 base_html_dir = base_output_dir / 'html'
 base_html_dir.mkdir(parents=True, exist_ok=True)
@@ -46,24 +55,13 @@ def get_night_output_dir(datestr: str) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
     return output_dir
 
-# authdir = parentdir / 'auth'
-#
-# outputdir = parentdir_data / 'output'
-#
-# expdir = parentdir_data / 'exposure_history'
-# datadir = parentdir_data / 'data'
-# tdescoredir = parentdir_data / 'tdescore_output'
 
-#
-# base_html_dir = parentdir_data / 'mbh_html'
-# htmldir = base_html_dir #/ 'nuclear'
-# tdescore_html_dir = base_html_dir / 'tdescore'
-#
-# sourcedir = parentdir_data / "sources"
-#
-# sfd_dir = parentdir / 'sfddata-master/'
-#
-# ml_dir = parentdir_data / 'ml_models'
-# ml_dir.mkdir(exist_ok=True)
-#
-# tdefile = datadir / "known_tde_names.dat"
+def get_log_path(datestr: str, selection: str) -> Path:
+    """
+    Get the log file path for a given selection type.
+
+    :param datestr: Date string in the format 'YYYYMMDD'
+    :param selection: Selection type (e.g., 'tdescore')
+    :return: Path to the log file for the given selection
+    """
+    return get_night_output_dir(datestr) / f'scantde_{selection}_log.json'

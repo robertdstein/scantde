@@ -1,68 +1,35 @@
-from scantde.database.models._source import NuclearSource
-from sqlmodel import SQLModel, create_engine, Session
-from scantde.paths import db_path
-import pandas as pd
+from sqlmodel import SQLModel, create_engine
+from scantde.paths import get_db_path
 import logging
 import sqlalchemy as sa
 
 logger = logging.getLogger(__name__)
 
-sqlite_url = f"sqlite:///{db_path}"
-
-def get_engine():
+def get_engine(selection: str):
     """
     Get the SQLAlchemy engine for the database
     """
+    sqlite_url = f"sqlite:///{get_db_path(selection)}"
     return create_engine(sqlite_url, echo=False)
 
-engine = create_engine(sqlite_url, echo=False)
 
-
-def create_db_and_tables():
+def create_db_and_tables(selection: str):
     """
     Create the database and tables
     """
+    engine = get_engine(selection)
     SQLModel.metadata.create_all(engine)
 
 
-def check_tables_exist():
+def check_tables_exist(selection: str):
     """
     Check if the tables exist, if not create them
+
+    :param selection: str, the selection type (e.g., 'tdescore')
     """
+    engine = get_engine(selection)
     insp = sa.inspect(engine)
     tables = insp.get_table_names()
     if len(tables) == 0:
-        print("No DB tables found, creating them now!")
-        create_db_and_tables()
-
-
-check_tables_exist()
-
-
-def update_source_table(df: pd.DataFrame, update_existing: bool = False):
-    """
-    Update the source table with new sources
-
-    :param df: pd.DataFrame
-    :param update_existing: bool
-    """
-    with Session(engine) as session:
-        for idx, row in df.iterrows():
-
-            source = session.get(NuclearSource, row["name"])
-
-            if source is None:
-                # This means the source does not exist
-                source = NuclearSource(
-                    **row.to_dict()
-                )
-                session.add(source)
-                session.commit()
-            elif update_existing:
-                source = session.get(NuclearSource, row["name"])
-                for key, value in row.to_dict().items():
-                    if key in source.__dict__.keys():
-                        setattr(source, key, value)
-                session.commit()
-            else:
-                logger.debug(f"Source {row['name']} already exists")
+        logger.info("No DB tables found, creating them now!")
+        create_db_and_tables(selection=selection)

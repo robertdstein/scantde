@@ -1,16 +1,16 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from scantde.paths import sym_dir, db_path
+from scantde.paths import sym_dir
 
-db = SQLAlchemy()
+# db = SQLAlchemy()
 
 def create_app():
     app = Flask(
         __name__,
         static_folder=str(sym_dir)
     )
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
-    db.init_app(app)
+    # app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+    # db.init_app(app)
 
     from .index import index_bp
     app.register_blueprint(index_bp)

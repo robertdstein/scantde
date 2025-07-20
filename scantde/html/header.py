@@ -17,9 +17,9 @@ def base_html_header(
         source_line = ""
     else:
         source_line = (
-            f"This is the ZTFbh scanning page for TDE Candidates: "
+            f"<br>This is the ZTFbh scanning page for TDE Candidates: "
             f"{len(sources)} Transients Passed, "
-            f"including {sources['is_tde'].sum()} known TDEs. "
+            f"including {sources['is_tde'].sum()} known TDEs. <br>"
         )
 
     html = (
@@ -78,12 +78,25 @@ def base_html_header(
         <div style="background-color:#F3E5AB;;">
         <font size="4">Search For Sources</font>
         </br>
+        <br>
+        TDE Selection:
+        <select id="selectionDropdown" name="selectionDropdown">
+            <option value="tdescore" {% if selection == 'tdescore' %}selected{% endif %}>tdescore (classic)</option>
+            <option value="tdescore_nohostinfo" {% if selection == 'tdescore_nohostinfo' %}selected{% endif %}>tdescore (no host info)</option>
+        </select>
+        <br>
+        <br>
+        <span id="selectionText" style="margin-left:20px; font-style:italic;"></span>
+        <br>
+        <br>
         <form id="searchByNameForm" method="get" action="/search_by_name">
+            <input type="hidden" name="selection" id="selectionByName">
             Load Source Page: <input id="nameInput" name="name" value="{{ name or '' }}" style="width:200px;">
             <button type="submit">Search by Name</button>
         </form>
         <br>
         <form method="get" action="/search_by_date">
+            <input type="hidden" name="selection" id="selectionByDate">
             Search by Date: <input type="date" name="date" value="{{ today }}">
             Lookback Days: <input type="number" name="lookback_days" min="1" value="{{ lookback_days or 1 }}" style="width:60px;">
             <label class="switch">
@@ -92,25 +105,41 @@ def base_html_header(
             Scanning Mode:
             <select name="mode">
                 <option value="all" {% if mode == 'all' %}selected{% endif %}>All</option>
-                <option value="infant" {% if mode == 'infant' %}selected{% endif %}>Infant</option>
-                <option value="non-infant" {% if mode == 'non-infant' %}selected{% endif %}>Non-Infant</option>
+                <option value="infant" {% if mode == 'infant' %}selected{% endif %}>Infant (<7d)</option>
+                <option value="has-lc" {% if mode == 'has-lc' %}selected{% endif %}>Has GP fit</option>
+                <option value="junk" {% if mode == 'junk' %}selected{% endif %}>Junk</option>
             </select>
             <button type="submit">Search by Date</button>
         </form>
+        
+        <script>
+            // Set hidden inputs on page load and dropdown change
+            function updateSelectionInputs() {
+                var value = document.getElementById('selectionDropdown').value;
+                document.getElementById('selectionByName').value = value;
+                document.getElementById('selectionByDate').value = value;
+                
+                // Update text based on selection
+                var text = "";
+                if (value === "tdescore") {
+                    text = "tdescore (classic) classifier uses LC, nuclearity and host info to classify TDEs. It will not classify sources which are missing host parameters, e.g. if the host is not WISE-detected.";
+                } else if (value === "tdescore_nohostinfo") {
+                    text = "tdescore (no host info) classifier uses only LC and nuclearity for classification. Probable AGN in WISE (W1-W2 > 0.7) are removed manually, but host info is not given to the classifier for scoring.";
+                }
+                document.getElementById('selectionText').textContent = text;
+            }
+            document.getElementById('selectionDropdown').addEventListener('change', updateSelectionInputs);
+            window.onload = updateSelectionInputs;
+        </script>
         <br>
         </div>
         <hr style="height:2px;border-width:0;color:gray;background-color:gray">
         """
             + f"""
     {link_text}
-
     {source_line}
     <br>
-
-    <br>
     <div style="background-color:#ffc0c0;">
-    Disclaimer: tdescore will not select TDEs in milliquas-detected hosts, 
-    or TDEs in galaxies without a WISE detection. <br>
     As more data is collected for a source, better tdescore classifiers can be used. <br>
     Look at the bolded classifier score to see which classifier is most reliable for each source.
     </div>    

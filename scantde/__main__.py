@@ -5,20 +5,13 @@ Run the TDEScore integration for a given date
 import argparse
 import logging
 
-import scantde.selections.tdescore
-# Set the TDESCORE_DATA environment variable to the output directory
-# from scantde.paths import tdescore_output_dir
-# os.environ["TDESCORE_DATA"] = str(tdescore_output_dir)
-
 from scantde.utils import get_current_datestr
-from scantde.selections.tdescore.io import load_candidates
-from scantde.html.make_html import TDESCORE_HTML_DIR, make_daily_html_table
-from scantde.selections.tdescore.archive import update_archive
 from tdescore.combine.parse import combine_all_sources
 
 from scantde.candidates import get_ztf_candidates, ztf_alerts_path
 from scantde.utils import get_known_tdes
 from scantde.selections.tdescore.run import run_tdescore
+from scantde.selections.nohostinfo.run import run_tdescore_nohostinfo
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +56,6 @@ def run():
 
     df["tdescore_lc"] = args.skip
 
-
     all_known_tdes = get_known_tdes()
     logger.info(f"Have {len(all_known_tdes)} known TDEs")
 
@@ -72,6 +64,11 @@ def run():
     df.set_index("source_name", inplace=True)
     df["is_tde"] = df["name"].isin(all_known_tdes)
 
+    df["tdescore"] = None
+    df["tdescore_best"] = None
+    df["tdescore_high_noise"] = False
+    df["tdescore_lc_score"] = None
+
     df = df.sort_values(by=["is_tde", "name"], ascending=[False, False])
     df.reset_index(drop=True, inplace=True)
 
@@ -79,36 +76,10 @@ def run():
         df = df[:2000]
 
     logger.info(f"Running TDEScore integration for {datestr}")
-    run_tdescore(datestr, df)
+    proc_df = run_tdescore(datestr, df.copy())
 
+    if len(proc_df) > 0:
+        mask = df["ztf_name"].isin(proc_df["ztf_name"])
+        df.loc[mask, "tdescore_lc"] = True
 
-def rebuild_html():
-    """
-    Run the TDEScore integration for a given date
-    """
-
-    logger.setLevel(logging.INFO)
-    logging.getLogger("scantde").setLevel(logging.INFO)
-
-    argparser = argparse.ArgumentParser()
-    argparser.add_argument(
-        "-n", "--night", "--datestr",
-        dest="datestr",
-        type=str, help="Date to run the integration for", required=False
-    )
-    args = argparser.parse_args()
-
-    datestr = args.datestr
-
-    if datestr is None:
-        datestr = get_current_datestr()
-
-    logger.info(f"Re-building html for {datestr}")
-
-    df = load_candidates(datestr)
-    full_df = combine_all_sources(df, save=False)
-
-    html_output_dir = TDESCORE_HTML_DIR / datestr
-
-    make_daily_html_table(full_df, output_dir=html_output_dir)
-    update_archive(datestr)
+    run_tdescore_nohostinfo(datestr, df)

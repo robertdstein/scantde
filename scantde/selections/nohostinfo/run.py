@@ -2,13 +2,13 @@
 Run the TDEScore selection for a given date
 """
 import logging
-from scantde.selections.tdescore.apply import apply_tdescore
+from scantde.selections.nohostinfo.apply import apply_tdescore_nohostinfo
 from scantde.html.make_html import TDESCORE_HTML_DIR
 
 logger = logging.getLogger(__name__)
 
 
-def run_tdescore(datestr, df):
+def run_tdescore_nohostinfo(datestr, df):
     """
     Run the TDEScore selection for a given date
 
@@ -19,6 +19,6 @@ def run_tdescore(datestr, df):
 
     nightly_output_dir = TDESCORE_HTML_DIR / datestr
 
-    df = apply_tdescore(df, nightly_output_dir)
+    apply_tdescore_nohostinfo(df, nightly_output_dir)
+
     logger.info(f"TDEScore complete for {datestr}!")
-    return df

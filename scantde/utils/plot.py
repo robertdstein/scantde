@@ -24,7 +24,7 @@ def create_lightcurve_plots(source_table: pd.DataFrame, base_output_dir: Path):
     :param base_output_dir: Output directory
     """
 
-    fig_dir = base_output_dir / "tdescore/lightcurves"
+    fig_dir = base_output_dir / "lightcurves"
     fig_dir.mkdir(parents=True, exist_ok=True)
 
     for i, row in source_table.iterrows():

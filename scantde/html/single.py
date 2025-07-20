@@ -8,7 +8,7 @@ from scantde.html.links import make_page_links
 from tdescore.lightcurve.extinction import get_extinction_correction, wavelengths, extra_wavelengths
 from tdescore.lightcurve.window import THERMAL_WINDOWS
 
-CLASSIFIERS = ["host", "infant", "week"] + [f"thermal_{x}" for x in THERMAL_WINDOWS] + ["full"]
+CLASSIFIERS = ["host", "infant", "week"] + [f"thermal_{x:.0f}" if x is not None else "thermal_all" for x in THERMAL_WINDOWS] + ["full"]
 
 all_wavelengths = wavelengths.copy()
 all_wavelengths.update(extra_wavelengths)
@@ -17,15 +17,17 @@ all_wavelengths.update(extra_wavelengths)
 def make_html_single(
     row: pd.Series,
     base_output_dir: Path,
+    selection: str,
     prefix: str = "",
     count_line: str = "",
-    classifiers: list[str] | None = None
+    classifiers: list[str] | None = None,
 ) -> str:
     """
     Function to generate HTML for a single source
 
     :param row: pd.Series Row of the source table
     :param count_line: str Line to add to the count
+    :param selection: str Selection type (e.g., 'tdescore')
     :param prefix: str Prefix for paths
     :param base_output_dir: Path Output directory
     :param classifiers: list[str] Classifiers to use
@@ -39,8 +41,16 @@ def make_html_single(
 
     name = row["ztf_name"]
 
-    lightcurve_path = f"{prefix}tdescore/lightcurves/{name}.png"
-    shap_path = f"{prefix}tdescore/shap/{row['tdescore_best']}/{name}.png"
+    lightcurve_path = f"{prefix}lightcurves/{name}.png"
+
+    sub_dir = row["tdescore_best"]
+
+    if sub_dir[-1].isdigit():
+        chunks = sub_dir.split("_")
+        chunks[-1] = str(float(chunks[-1])) # Ensure the window is formatted correctly
+        sub_dir = "_".join(chunks)
+
+    shap_path = f"{prefix}{selection}/shap/{sub_dir}/{name}.png"
 
     classifier_lines = []
 
@@ -64,7 +74,7 @@ def make_html_single(
     name_line = (
         rf'<b>{count_line}</b> <a href="search_by_name?name={name}"><b>'
         rf'<font size="3">{name}</font></b></a>'
-        rf' [junk={row["is_junk"]}] [lcscore={row['tdescore_score']:.2f}]&nbsp;&nbsp;&nbsp;&nbsp;'
+        rf' [junk={row["is_junk"]}] [lcscore={row['tdescore_lc_score']:.2f}]&nbsp;&nbsp;&nbsp;&nbsp;'
     )
 
     name_line += (
@@ -94,30 +104,20 @@ def make_html_single(
         extinction = get_extinction_correction(ra, dec, [wl])
         extinction_line += f"{f_name}: {extinction[0]:.2f} &nbsp;&nbsp;"
 
-    gp_ext = f"{prefix}tdescore/gp/None/{name}.png"
+    gp_ext = f"{prefix}gp/None/{name}.png"
     gp_path = base_output_dir / gp_ext
 
-    gp_thermal_ext = None
-
-    for window in THERMAL_WINDOWS:
-        new_thermal_ext = f"{prefix}tdescore/gp_thermal/{window}/None/{name}.png"
-        gp_thermal_path = base_output_dir / new_thermal_ext
-        key = f"tdescore_thermal_{window}"
-        if key in row:
-            if gp_thermal_path.exists() & pd.notnull(row[key]):
-                gp_thermal_ext = new_thermal_ext
-                break
+    gp_line = ""
 
     if gp_path.exists() & (row["tdescore_best"] == "full"):
         gp_line = f'<img src="{gp_ext}" height="250">'
-    elif gp_thermal_ext is not None:
-        gp_line = f'<img src="{gp_thermal_ext}" height="250">'
-    else:
-        linear_path = base_output_dir / f"{prefix}tdescore/gp/{name}_linear.png"
-        if linear_path.exists():
-            gp_line = f'<img src="{prefix}tdescore/gp/{name}_linear.png" height="250">'
-        else:
-            gp_line = ""
+    elif "thermal" in row["tdescore_best"]:
+        window = row["thermal_window"]
+        window = float(window) if pd.notnull(window) else None
+        gp_thermal_ext = f"{prefix}gp_thermal/{window}/None/{name}.png"
+        gp_thermal_path = base_output_dir / gp_thermal_ext
+        if gp_thermal_path.exists():
+            gp_line = f'<img src="{gp_thermal_ext}" height="250">'
 
     html = f"""
     <div style="background-color:#E8F8F5;">

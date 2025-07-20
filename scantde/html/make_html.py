@@ -9,6 +9,7 @@ from scantde.paths import base_html_dir
 from tdescore.lightcurve.window import THERMAL_WINDOWS
 from typing import Optional
 from scantde.html.single import make_html_single
+from scantde.log import ProcStage
 
 
 import logging
@@ -17,22 +18,8 @@ logger = logging.getLogger(__name__)
 
 TDESCORE_HTML_DIR = base_html_dir / "tdescore"
 
-TDESCORE_HTML_NAME = "tdescore_source_table.html"
 
-INFANT_HTML_NAME = f"infant_{TDESCORE_HTML_NAME}"
-
-# archive_paths = {
-#     classifier: TDESCORE_HTML_DIR / f"archive_{classifier}.html"
-#     for classifier in CLASSIFIERS
-# }
-#
-# recent_paths = {
-#     classifier: TDESCORE_HTML_DIR / f"recent_{classifier}.html"
-#     for classifier in CLASSIFIERS
-# }
-
-
-def format_processing_log(log: list[dict]) -> str:
+def format_processing_log(log: list[ProcStage]) -> str:
     """
     Function to format the processing log
 
@@ -40,7 +27,7 @@ def format_processing_log(log: list[dict]) -> str:
     :return: str Formatted log
     """
 
-    log_df = pd.DataFrame(log)
+    log_df = pd.DataFrame([x.model_dump() for x in log])
 
     none_character = "/"
 
@@ -85,10 +72,10 @@ def format_processing_log(log: list[dict]) -> str:
 def make_html_table(
     source_table: pd.DataFrame,
     html_header: str,
+    base_output_dir: Path,
+    selection: str,
     prefix: str = "",
-    output_path: Path | None = None,
-    base_output_dir: Path | None = None,
-    proc_log: Optional[list[dict]] = None,
+    proc_log: Optional[list[ProcStage]] = None,
     classifiers: list[str] | None = None,
 ) -> str:
     """
@@ -97,27 +84,24 @@ def make_html_table(
     :param source_table: pd.DataFrame Table of sources
     :param html_header: str HTML header
     :param prefix: str Prefix for paths
-    :param output_path: Path Output path
     :param base_output_dir: Path Base output directory
-    :param proc_log: list[dict] Processing log
+    :param selection: str Selection type (e.g., 'tdescore')
+    :param proc_log: list[ProcStage] Processing log
     :param classifiers: list[str] Classifiers to use
     :return: str HTML
     """
-    output_path.parent.mkdir(parents=True, exist_ok=True)
 
     proc_log_str = format_processing_log(proc_log) if proc_log is not None else ""
 
     html = html_header
     html += "<table>"
 
-    if base_output_dir is None:
-        base_output_dir = output_path.parent
-
     for i, row in tqdm(source_table.iterrows(), total=len(source_table)):
         count_line = f"({i+1}/{len(source_table)})"
         html += make_html_single(
             row, base_output_dir=base_output_dir,
             prefix=prefix,
+            selection=selection,
             count_line=count_line,
             classifiers=classifiers
         )
@@ -128,23 +112,17 @@ def make_html_table(
     {proc_log_str}
     """
 
-    if output_path is not None:
-        print(f"Saving HTML scanning page to {output_path}")
-
-        with open(output_path, "w") as f:
-            f.write(html)
-
     return html
 
 
 def make_daily_html_table(
     source_table: pd.DataFrame,
     output_dir: Path,
+    base_output_dir: Path,
+    selection: str,
     prefix: str = "",
-    base_output_dir: Path | None = None,
-    proc_log: Optional[list[dict]] = None,
+    proc_log: Optional[list[ProcStage]] = None,
     classifiers: list[str] | None = None,
-    table_name: str = TDESCORE_HTML_NAME,
 ) -> str:
     """
     Function to generate HTML for a table of sources
@@ -155,12 +133,9 @@ def make_daily_html_table(
     :param base_output_dir: Path Base output directory
     :param proc_log: list[dict] Processing log
     :param classifiers: list[str] Classifiers to use
-    :param table_name: str Name of the HTML file
     :return: str HTML
     """
     datestr = output_dir.name
-
-    output_path = TDESCORE_HTML_DIR / datestr / table_name
 
     base_html_header(
         source_table,
@@ -173,7 +148,8 @@ def make_daily_html_table(
 
     html = make_html_table(
         source_table, html_header, prefix=prefix,
-        output_path=output_path, base_output_dir=base_output_dir, proc_log=proc_log, classifiers=classifiers
+        base_output_dir=base_output_dir, selection=selection,
+        proc_log=proc_log, classifiers=classifiers
     )
 
     return html

@@ -17,12 +17,13 @@ def search_by_name():
     columns = []
     error = ""
     extra_html = ""
+    selection = request.args.get('selection', 'tdescore')
     if name:
-        res = query_by_name(name)
+        res = query_by_name(name, selection=selection)
         if res is not None:
             columns = sorted(res.index.tolist())
             row = res
-            extra_html = generate_html_by_name(name)
+            extra_html = generate_html_by_name(name, selection=selection)
         else:
             error = f"No result found for {name}"
     else:
@@ -39,7 +40,7 @@ def search_by_name():
       </table>
     {% endif %}
     '''
-    return render_template_string(html, row=row, columns=columns, error=error, extra_html=extra_html, today=datetime.now().strftime('%Y-%m-%d'), name=name)
+    return render_template_string(html, row=row, columns=columns, error=error, extra_html=extra_html, today=datetime.now().strftime('%Y-%m-%d'), name=name, selection=selection)
 
 # if __name__ == '__main__':
 #     app.run(debug=True)

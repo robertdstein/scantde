@@ -32,42 +32,20 @@ logger = logging.getLogger(__name__)
 def apply_classifier(
     source_table: pd.DataFrame,
     classifier: str,
+    selection: str,
     shap_base_dir: Optional[Path] = None,
     explain: bool = True,
 ):
 
-    if classifier == "hostfast":
-        classifier_name = "hostonlyfast"
-        columns = fast_host_columns
-    elif classifier == "host":
-        classifier_name = "hostonly"
-        columns = host_columns
-    elif classifier == "infant":
-        classifier_name = "infant"
-        columns = infant_columns
-    elif classifier == "week":
-        classifier_name = "week"
-        columns = week_columns
-    elif classifier == "month":
-        classifier_name = "month"
-        columns = month_columns
-    elif classifier == "full":
-        classifier_name = "full"
-        columns = post_peak
-    elif "thermal" in classifier:
-        window = classifier.split("_")[-1]
-        try:
-            window = float(window)
-            classifier_name = f"thermal_{window:.0f}"
-        except ValueError:
-            window = None
-            classifier_name = "thermal_all"
-        columns = get_thermal_columns(window)
-    else:
-        raise ValueError(f"Unknown classifier: {classifier}")
+    window = classifier.split("_")[-1]
+    try:
+        window = float(window)
+        classifier_name = f"thermal_nohostinfo_{window:.0f}"
+    except ValueError:
+        window = None
+        classifier_name = "thermal_nohostinfo_all"
+    columns = get_thermal_columns(window, include_host=False)
 
-    # tdescore_path = ml_dir.joinpath(f"{classifier_name}.pkl")
-    # clf = joblib.load(tdescore_path)
     tdescore_path = ml_dir.joinpath(f"{classifier_name}.json")
     clf = XGBClassifier()
     clf.load_model(str(tdescore_path))
@@ -93,7 +71,7 @@ def apply_classifier(
 
     data_to_use = data_to_use[~nan_mask].astype(float)
 
-    logger.info(f"Applying classifier: tdescore_{classifier}")
+    logger.info(f"Applying classifier: {classifier_name}")
 
     scores = clf.predict_proba(data_to_use).T[1] if len(data_to_use) > 0 else np.array([])
 
