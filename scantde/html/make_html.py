@@ -5,7 +5,6 @@ from astropy.time import Time
 from tqdm import tqdm
 
 from scantde.html.header import base_html_header
-from scantde.paths import base_html_dir
 from tdescore.lightcurve.window import THERMAL_WINDOWS
 from typing import Optional
 from scantde.html.single import make_html_single
@@ -15,8 +14,6 @@ from scantde.log import ProcStage
 import logging
 
 logger = logging.getLogger(__name__)
-
-TDESCORE_HTML_DIR = base_html_dir / "tdescore"
 
 
 def format_processing_log(log: list[ProcStage]) -> str:
@@ -131,6 +128,7 @@ def make_daily_html_table(
     :param output_dir: Path Output directory
     :param prefix: str Prefix for paths
     :param base_output_dir: Path Base output directory
+    :param selection: str Selection type (e.g., 'tdescore')
     :param proc_log: list[dict] Processing log
     :param classifiers: list[str] Classifiers to use
     :return: str HTML
@@ -153,39 +151,4 @@ def make_daily_html_table(
     )
 
     return html
-
-
-# def make_archive_html_table(
-#     source_table: pd.DataFrame,
-#     classifier: str,
-#     proc_log: Optional[list[dict]] = None,
-#     archive_category: str = "archive",
-# ) -> str:
-#     """
-#     Function to generate HTML for a table of sources
-#
-#     :param source_table: pd.DataFrame Table of sources
-#     :param classifier: str Classifier
-#     :param proc_log: list[dict] Processing log
-#     :param archive_category: str Archive category
-#     """
-#
-#     assert archive_category in ["archive", "recent"], \
-#         f"Invalid archive category {archive_category}"
-#
-#     if archive_category == "archive":
-#         output_path = archive_paths[classifier]
-#     else:
-#         output_path = recent_paths[classifier]
-#
-#     logger.info(f"Saving archive HTML page to {output_path}")
-#
-#     html_header = make_html_archive_header(classifier, source_table)
-#
-#     html = make_html_table(
-#         source_table,
-#         html_header=html_header, output_path=output_path, proc_log=proc_log,
-#         # classifiers=[classifier]
-#     )
-#     return html
 

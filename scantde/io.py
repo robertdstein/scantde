@@ -1,8 +1,7 @@
 from pathlib import Path
 import pandas as pd
 import logging
-from scantde.html.make_html import TDESCORE_HTML_DIR
-from scantde.paths import get_night_output_dir
+from scantde.paths import get_night_output_dir, base_html_dir
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +56,7 @@ def results_cache_filename(datestr: str, selection: str) -> Path:
     :param datestr: Date to get the cache filename for
     :return: Path Cache filename
     """
-    return TDESCORE_HTML_DIR / datestr / f"scantde_{selection}_results.json"
+    return base_html_dir / datestr / f"scantde_{selection}_results.json"
 
 
 def save_results(datestr: str, selection: str, result_df: pd.DataFrame) -> None:

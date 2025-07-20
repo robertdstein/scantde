@@ -27,7 +27,7 @@ def generate_html_by_name(name: str, selection: str) -> str:
         row["thermal_window"] = None
 
     output_dir = sym_dir.parent
-    prefix = f"static/tdescore/"
+    prefix = f"static/"
 
     html = make_html_single(
         row=row,
@@ -127,7 +127,7 @@ def generate_html_by_date(
 
     output_dir = sym_dir / "tdescore" / datestr
 
-    prefix = f"static/tdescore" # FIxme: This is the prefix for the HTML files
+    prefix = f"static"
 
     html = make_daily_html_table(
         source_table=df,

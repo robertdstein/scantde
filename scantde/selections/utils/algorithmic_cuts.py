@@ -120,7 +120,7 @@ def apply_algorithmic_cuts(
     mask = np.ones(len(df), dtype=bool)
 
     for column in ["sgmag1", "srmag1", "simag1", "szmag1"]:
-        mask &= (df[column] > 12.)# | (df[column] == -999.)
+        mask &= (df[column] > 12.) | (df[column] == -999.)
 
     df, proc_log = update_source_list(
         df, proc_log, mask, selection=selection,
