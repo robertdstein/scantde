@@ -1,4 +1,3 @@
-# run.py
 from scantde.server import create_app
 
 app = create_app()

@@ -81,13 +81,13 @@ def run():
 
     logger.info(f"Running TDEScore integration for {datestr}")
 
-    # # Apply tdescore (classic)
-    # proc_df = apply_tdescore(df.copy(), base_output_dir=nightly_output_dir)
-    #
-    # # Do not repeat lightcurve analysis for already processed sources
-    # if len(proc_df) > 0:
-    #     mask = df["ztf_name"].isin(proc_df["ztf_name"])
-    #     df.loc[mask, "tdescore_lc"] = True
+    # Apply tdescore (classic)
+    proc_df = apply_tdescore(df.copy(), base_output_dir=nightly_output_dir)
+
+    # Do not repeat lightcurve analysis for already processed sources
+    if len(proc_df) > 0:
+        mask = df["ztf_name"].isin(proc_df["ztf_name"])
+        df.loc[mask, "tdescore_lc"] = True
 
     # Apply tdescore (no host info)
     apply_tdescore_nohostinfo(df.copy(), base_output_dir=nightly_output_dir)
