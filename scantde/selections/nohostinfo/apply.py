@@ -38,7 +38,7 @@ from tdescore.lightcurve.thermal import (
 from scantde.selections.utils.apply_thermal import apply_thermal
 from scantde.utils.plot import create_lightcurve_plots
 from scantde.utils.skyportal import export_to_skyportal, download_from_skyportal
-from scantde.log import export_processing_log, update_processing_log
+from scantde.log import export_processing_log, update_processing_log, update_source_list
 
 from scantde.errors import NoSourcesError
 
@@ -86,11 +86,12 @@ def apply_tdescore_nohostinfo(
             df, selection=NOHOST_SELECTION, base_output_dir=base_output_dir,
         )
 
-        mask = pd.isnull(df["tdescore"])
-        update_processing_log(
-            proc_log, "LC Fit failed", df[mask]
+        mask = pd.notnull(df["tdescore"])
+
+        df, proc_log = update_source_list(
+            df, proc_log, mask, selection=NOHOST_SELECTION,
+            stage="LC Fit failed"
         )
-        df = df[~mask].reset_index(drop=True)
 
         if len(df) == 0:
             raise NoSourcesError("No sources left after lightcurve fit")

@@ -19,7 +19,6 @@ def export_results(df: pd.DataFrame, datestr: str, selection: str) -> pd.DataFra
     :return: Final DataFrame with junk tags applied
     """
     # Tag junk
-
     junk = tag_junk(df)
     df["is_junk"] = junk
 

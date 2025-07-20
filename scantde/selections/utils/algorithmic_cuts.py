@@ -29,7 +29,8 @@ logger = logging.getLogger(__name__)
 
 MAX_DIST_ARCSEC = 0.9  # Max distance from nucleus in arcsec for nuclear candidates
 
-CROSSMATCH_RADIUS = 3.0  # Distance in arcsec for crossmatch candidates
+CROSSMATCH_RADIUS = 3.0  # Distance in arcsec for PS1 crossmatch candidates
+MAX_SGSCORE = 0.5 # Maximum sgscore1 value for stellar candidates
 
 def apply_algorithmic_cuts(
     df: pd.DataFrame,
@@ -55,21 +56,6 @@ def apply_algorithmic_cuts(
 
     proc_log = update_processing_log(proc_log, "Initial", df)
 
-    max_sgscore = 0.5
-
-    mask = (df["sgscore1"] < max_sgscore) | (df["sgscore1"] == -999.0) | (df["distpsnr1"] > CROSSMATCH_RADIUS)
-    df = df[mask].copy()
-
-    logger.info(
-        f"Applying sgscore cut, leaving {len(df)} sources including {sum(df['is_tde'])} TDEs")
-
-    proc_log = update_processing_log(
-        proc_log, "Algorithmic cuts - sgscore", df
-    )
-
-    if len(df) == 0:
-        raise NoSourcesError("No sources left after cut")
-
     # Deduplicate
 
     logger.info("Deduplicating sources")
@@ -89,13 +75,24 @@ def apply_algorithmic_cuts(
 
     proc_log = update_processing_log(proc_log, "De-duplicated", df)
 
+    # Remove stars
+    mask = (df["sgscore1"] < MAX_SGSCORE) | (df["sgscore1"] == -999.0) | (df["distpsnr1"] > CROSSMATCH_RADIUS)
+    df = df[mask].copy()
+    logger.info(
+        f"Applying sgscore cut, leaving {len(df)} sources including {sum(df['is_tde'])} TDEs")
+    proc_log = update_processing_log(
+        proc_log, "Algorithmic cuts - sgscore", df
+    )
+    if len(df) == 0:
+        raise NoSourcesError("No sources left after cut")
+
+    # Remove galactic sources
     c = SkyCoord(ra=df["ra"].values, dec=df["dec"].values, unit="deg")
     df["gal_b"] = c.galactic.b.deg
 
     min_gal_b = 10
 
     mask = (df["gal_b"] < -min_gal_b) | (df["gal_b"] > min_gal_b)
-
     df, proc_log = update_source_list(
         df, proc_log, mask, selection=selection,
         stage="Algorithmic cuts - Galactic latitude", export_db=False
@@ -107,7 +104,7 @@ def apply_algorithmic_cuts(
     )
 
     if require_nuclear:
-
+        # Remove sources which are not nuclear
         mask = df["distpsnr1"] < MAX_DIST_ARCSEC
 
         df, proc_log = update_source_list(
@@ -119,6 +116,7 @@ def apply_algorithmic_cuts(
 
     mask = np.ones(len(df), dtype=bool)
 
+    # Remove really bright hosts (stellar)
     for column in ["sgmag1", "srmag1", "simag1", "szmag1"]:
         mask &= (df[column] > 12.) | (df[column] == -999.)
 
@@ -131,6 +129,7 @@ def apply_algorithmic_cuts(
         f"Applying bright host (stellar) cut, leaving {len(df)} sources"
     )
 
+    # Remove bright hosts (galactic)
     mask = (df["neargaiabright"] > 5.) | (df["neargaiabright"] < -0.0)
 
     df, proc_log = update_source_list(
@@ -142,14 +141,14 @@ def apply_algorithmic_cuts(
         f"Applying neargaiabright cut, leaving {len(df)} sources"
     )
 
-    # Uses fast crossmatch data (no WISE)
-
+    # Download fast crossmatch data (no WISE)
     logger.info("Downloading fast crossmatch data")
     download_crossmatch_fast(df.copy())
     logger.info("Combining fast crossmatch sources")
     full_df = combine_all_sources(df.copy(), save=False)
-    mask = (full_df["gaia_aplx"] < 3.0) & ~full_df["has_milliquas"]
 
+    # Remove sources with gaia parallax > 3 sigma, or with a milliquas match
+    mask = (full_df["gaia_aplx"] < 3.0) & ~full_df["has_milliquas"]
     df, proc_log = update_source_list(
         df, proc_log, mask, selection=selection,
         stage="Algorithmic crossmatch cuts - fast"
@@ -163,6 +162,7 @@ def apply_algorithmic_cuts(
     full_df = combine_all_sources(df.copy(), save=False)
 
     if cut_wise:
+        # Remove sources with WISE data that is AGN-ish
         mask = (full_df["catwise_w1_m_w2"] > 0.7)
         df, proc_log = update_source_list(
             df, proc_log, ~mask, selection=selection,
