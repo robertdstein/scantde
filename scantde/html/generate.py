@@ -29,7 +29,6 @@ def generate_html_by_name(name: str, selection: str) -> str:
     db_match = query_by_name(
         name, selection=selection
     )
-    print(db_match)
 
     if row is None:
         row = db_match.copy()
@@ -77,6 +76,7 @@ def generate_html_by_name(name: str, selection: str) -> str:
         base_output_dir=output_dir,
         selection=selection,
         prefix=prefix,
+        include_cutout=True,
     )
     return html
 
@@ -100,6 +100,7 @@ def generate_html_by_date(
     selection: str,
     lookback_days: int = 1,
     hide_junk: bool = False,
+    include_cutout: bool = False,
     mode: str = "all"
 ) -> str:
     """
@@ -199,6 +200,7 @@ def generate_html_by_date(
         base_output_dir=sym_dir.parent,
         selection=selection,
         proc_log=proc_log,
-        prefix=prefix
+        prefix=prefix,
+        include_cutout=include_cutout,
     )
     return html

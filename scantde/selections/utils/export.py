@@ -7,6 +7,7 @@ from scantde.io import save_candidates, save_results
 from scantde.log import export_to_db
 from scantde.selections.utils.tag_junk import tag_junk
 from scantde.utils.slack import publish
+from scantde.utils.cutouts import batch_create_cutouts
 
 def export_results(df: pd.DataFrame, datestr: str, selection: str) -> pd.DataFrame:
     """
@@ -18,6 +19,9 @@ def export_results(df: pd.DataFrame, datestr: str, selection: str) -> pd.DataFra
     :param selection: Selection name to use for the classifier (e.g. 'tdescore')
     :return: Final DataFrame with junk tags applied
     """
+
+    # Batch download the cutouts
+    batch_create_cutouts(df)
     # Tag junk
     junk = tag_junk(df)
     df["is_junk"] = junk

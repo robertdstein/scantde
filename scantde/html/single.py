@@ -7,6 +7,7 @@ from scantde.html.links import make_page_links
 
 from tdescore.lightcurve.extinction import get_extinction_correction, wavelengths, extra_wavelengths
 from tdescore.lightcurve.window import THERMAL_WINDOWS
+from scantde.html.cutout import generate_cutout_html
 
 CLASSIFIERS = ["host", "infant", "week"] + [f"thermal_{x:.0f}" if x is not None else "thermal_all" for x in THERMAL_WINDOWS] + ["full"]
 
@@ -21,6 +22,7 @@ def make_html_single(
     prefix: str = "",
     count_line: str = "",
     classifiers: list[str] | None = None,
+    include_cutout: bool = False,
 ) -> str:
     """
     Function to generate HTML for a single source
@@ -31,17 +33,18 @@ def make_html_single(
     :param prefix: str Prefix for paths
     :param base_output_dir: Path Output directory
     :param classifiers: list[str] Classifiers to use
+    :param include_cutout: bool Whether to include cutout images
     :return: str HTML
     """
 
     if classifiers is None:
         classifiers = CLASSIFIERS
 
-    prefix = f"{Path(prefix) / str(row["datestr"])}/"
+    night_prefix = f"{Path(prefix) / str(row["datestr"])}/"
 
     name = row["name"]
 
-    lightcurve_ext = f"{prefix}lightcurves/{name}.png"
+    lightcurve_ext = f"{night_prefix}lightcurves/{name}.png"
     lightcurve_path = base_output_dir / lightcurve_ext
     if lightcurve_path.exists():
         lightcurve_line = f'<img src="{lightcurve_ext}" height="240">'
@@ -59,7 +62,7 @@ def make_html_single(
     elif sub_dir == "thermal_all":
         sub_dir = "thermal_None"
 
-    shap_ext = f"{prefix}{selection}/shap/{sub_dir}/{name}.png"
+    shap_ext = f"{night_prefix}{selection}/shap/{sub_dir}/{name}.png"
     shap_path = base_output_dir / shap_ext
     if shap_path.exists():
         shap_line = f'<img src="{shap_ext}" height="220">'
@@ -122,7 +125,7 @@ def make_html_single(
         extinction = get_extinction_correction(ra, dec, [wl])
         extinction_line += f"{f_name}: {extinction[0]:.2f} &nbsp;&nbsp;"
 
-    gp_ext = f"{prefix}gp/None/{name}.png"
+    gp_ext = f"{night_prefix}gp/None/{name}.png"
     gp_path = base_output_dir / gp_ext
 
     gp_line = ""
@@ -132,8 +135,11 @@ def make_html_single(
     elif "thermal" in str(row["tdescore_best"]):
         window = row["thermal_window"]
         window = float(window) if pd.notnull(window) else None
-        gp_thermal_ext = f"{prefix}gp_thermal/{window}/None/{name}.png"
+        gp_thermal_ext = f"{night_prefix}gp_thermal/{window}/None/{name}.png"
         gp_line = f'<img src="{gp_thermal_ext}" height="250">'
+
+    cutout_line = generate_cutout_html(source=row, prefix=prefix) \
+        if include_cutout else ""
 
     html = f"""
     <div style="background-color:#E8F8F5;">
@@ -145,8 +151,9 @@ def make_html_single(
     {make_page_links(name)}
     <br>
     {classifier_line}
-    </div>
     <br>
+    </div>
+    {cutout_line}
 
     <div class="row">
     {lightcurve_line}

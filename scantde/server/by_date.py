@@ -20,13 +20,15 @@ def search_by_date() -> str:
     hide_junk = bool(request.args.get('hide_junk'))
     mode = request.args.get('mode', 'all')
     selection = request.args.get('selection', 'tdescore')
+    show_cutout = bool(request.args.get('show_cutout', False))
     error = ""
     html = DEFAULT_HTML
     try:
         html = generate_html_by_date(
             datestr, selection=selection, lookback_days=num_days, hide_junk=hide_junk,
-            mode=mode
+            mode=mode, include_cutout=show_cutout
         )
     except FileNotFoundError:
         error = f"No cached results found for {date}. Please try a different date."
-    return render_template_string(html, today=date, lookback_days=num_days, hide_junk=hide_junk, error=error, mode=mode, selection=selection)
+
+    return render_template_string(html, today=date, lookback_days=num_days, hide_junk=hide_junk, error=error, mode=mode, selection=selection, show_cutout=show_cutout)

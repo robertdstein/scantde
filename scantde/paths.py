@@ -43,6 +43,9 @@ if not sym_dir.exists():
 ml_dir = code_dir / 'ml_models'
 ml_dir.mkdir(exist_ok=True)
 
+cutout_dir = base_html_dir / 'cutouts'
+cutout_dir.mkdir(exist_ok=True)
+
 
 def get_night_output_dir(datestr: str) -> Path:
     """

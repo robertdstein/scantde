@@ -74,6 +74,7 @@ def make_html_table(
     prefix: str = "",
     proc_log: Optional[list[ProcStage]] = None,
     classifiers: list[str] | None = None,
+    include_cutout: bool = False,
 ) -> str:
     """
     Function to generate HTML for a table of sources
@@ -85,6 +86,7 @@ def make_html_table(
     :param selection: str Selection type (e.g., 'tdescore')
     :param proc_log: list[ProcStage] Processing log
     :param classifiers: list[str] Classifiers to use
+    :param include_cutout: bool Whether to include cutout images
     :return: str HTML
     """
 
@@ -100,7 +102,8 @@ def make_html_table(
             prefix=prefix,
             selection=selection,
             count_line=count_line,
-            classifiers=classifiers
+            classifiers=classifiers,
+            include_cutout=include_cutout,
         )
 
     html += f"""
@@ -120,6 +123,7 @@ def make_daily_html_table(
     prefix: str = "",
     proc_log: Optional[list[ProcStage]] = None,
     classifiers: list[str] | None = None,
+    include_cutout: bool = False,
 ) -> str:
     """
     Function to generate HTML for a table of sources
@@ -147,7 +151,8 @@ def make_daily_html_table(
     html = make_html_table(
         source_table, html_header, prefix=prefix,
         base_output_dir=base_output_dir, selection=selection,
-        proc_log=proc_log, classifiers=classifiers
+        proc_log=proc_log, classifiers=classifiers,
+        include_cutout=include_cutout,
     )
 
     return html

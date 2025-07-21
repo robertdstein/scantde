@@ -103,7 +103,10 @@ def base_html_header(
             <label class="switch">
             Hide junk: <input type="checkbox" name="hide_junk" {% if hide_junk is not defined or hide_junk %}checked{% endif %}>
             </label>
-            Scanning Mode:
+            <label class="switch">
+            | Show Cutouts: <input type="checkbox" name="show_cutout" {% if show_cutout %} checked {% endif %}>
+            </label>
+            | Scanning Mode:
             <select name="mode">
                 <option value="all" {% if mode == 'all' %}selected{% endif %}>All</option>
                 <option value="infant" {% if mode == 'infant' %}selected{% endif %}>Infant (<7d)</option>
