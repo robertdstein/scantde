@@ -2,13 +2,14 @@ from flask import Blueprint, request, render_template_string
 from scantde.database.search import query_by_name
 from scantde.html.generate import generate_html_by_name
 from scantde.server.index import DEFAULT_HTML
+from scantde.server.login import login_required
 
 from datetime import datetime
 
 name_bp = Blueprint('name', __name__)
 
-
 @name_bp.route('/search_by_name', methods=['GET'])
+@login_required
 def search_by_name():
     name = request.args.get('name', '').strip()
     row = None

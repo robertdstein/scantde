@@ -22,6 +22,7 @@ def export_results(df: pd.DataFrame, datestr: str, selection: str) -> pd.DataFra
 
     # Batch download the cutouts
     batch_create_cutouts(df)
+
     # Tag junk
     junk = tag_junk(df)
     df["is_junk"] = junk

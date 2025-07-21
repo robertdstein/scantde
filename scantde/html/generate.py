@@ -37,33 +37,6 @@ def generate_html_by_name(name: str, selection: str) -> str:
         row["tdescore_lc_score"] = -1.
         row.replace({None: np.nan}, inplace=True)
 
-    # if name:
-    #     res = query_by_name(name, selection=selection)
-    #     if res is not None:
-    #         columns = sorted(res.index.tolist())
-    #         row = res
-    #         extra_html = generate_html_by_name(name, selection=selection)
-    #     else:
-    #         error = f"No result found for {name}"
-    # else:
-    #     error = "Please enter a name."
-    # html = DEFAULT_HTML + '''
-    # {{ extra_html|safe }}
-    # {% if row is not none %}
-    # <h2>Database Results for: {{ row['name'] }}</h2>
-    #   <table border="1">
-    #     <tr><th>Field</th><th>Value</th></tr>
-    #     {% for col in columns %}
-    #       <tr><td>{{ col }}</td><td>{{ row[col] }}</td></tr>
-    #     {% endfor %}
-    #   </table>
-    # {% endif %}
-    # '''
-
-    # if row is None:
-    #     row = pd.Series({"latest_datestr": None, "thermal_window": None, "ztf_name": name, "tdescore_best": None, "is_junk": False, "tdescore_lc_score": -1, "age": -1})
-        # return f"<p style='color:red;'>No cached results found for {name}</p>",
-
     row["datestr"] = row["latest_datestr"]
     if pd.isnull(row["thermal_window"]):
         row["thermal_window"] = None
@@ -110,6 +83,7 @@ def generate_html_by_date(
     :param selection: str selection type (e.g., 'tdescore')
     :param lookback_days: int number of days to look back
     :param hide_junk: bool whether to hide old infants
+    :param include_cutout: bool whether to include cutout images
     :param mode: str mode of operation
     :return: HTML string
     """

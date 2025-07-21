@@ -40,6 +40,14 @@ sym_dir = code_dir / "static"
 if not sym_dir.exists():
     sym_dir.symlink_to(base_html_dir, target_is_directory=True)
 
+# Copy images to the static directory
+image_dir = code_dir / "images"
+images = [x for x in image_dir.glob("*") if x.suffix in [".png", ".ico"]]
+for image in images:
+    target = sym_dir / image.name
+    if not target.exists():
+        target.symlink_to(image)
+
 ml_dir = code_dir / 'ml_models'
 ml_dir.mkdir(exist_ok=True)
 

@@ -3,13 +3,11 @@ import pandas as pd
 
 def base_html_header(
     sources: pd.DataFrame,
-    link_text: str = "",
 ) -> str:
     """
     Function to generate the base HTML header
 
     :param sources: pd.DataFrame Table of sources
-    :param link_text: str | None Link text
     :return: str HTML
     """
 
@@ -17,9 +15,10 @@ def base_html_header(
         source_line = ""
     else:
         source_line = (
-            f"<br>This is the ZTFbh scanning page for TDE Candidates: "
+            f"Search Results:"
             f"{len(sources)} Transients Passed, "
             f"including {sources['is_tde'].sum()} known TDEs. <br>"
+            '<hr style="height:2px;border-width:0;color:gray;background-color:gray">'
         )
 
     html = (
@@ -28,6 +27,7 @@ def base_html_header(
         <html>
         <head>
         <title>TDE Candidates</title>
+        <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
         <style>\
           * {\
              box-sizing: border-box;\
@@ -71,12 +71,14 @@ def base_html_header(
         </style>
         </head>
         <body>
-        <font size="5" color="green">TDE Candidate Portal</font>
-        </br>
-        </br>
+        <img src="{{ url_for('static', filename='scantde_logo.png') }}" alt="Logo" style="display:block; margin:auto; max-width:100px;">
+        <div style="height:0.5em;"></div>
+        <div style="text-align:center;">
+          <font size="5" color="#FF5F15">TDE Candidate Portal</font>
+        </div>
         <hr style="height:2px;border-width:0;color:gray;background-color:gray">
-        <div style="background-color:#F3E5AB;;">
-        <font size="4">Search For Sources</font>
+        <div style="background-color:#FF5F1550">
+        <font size="4"><b>Search For Sources</b></font>
         </br>
         <br>
         TDE Selection:
@@ -104,9 +106,9 @@ def base_html_header(
             Hide junk: <input type="checkbox" name="hide_junk" {% if hide_junk is not defined or hide_junk %}checked{% endif %}>
             </label>
             <label class="switch">
-            | Show Cutouts: <input type="checkbox" name="show_cutout" {% if show_cutout %} checked {% endif %}>
+            |  Show Cutouts: <input type="checkbox" name="show_cutout" {% if show_cutout %} checked {% endif %}>
             </label>
-            | Scanning Mode:
+            |  Scanning Mode:
             <select name="mode">
                 <option value="all" {% if mode == 'all' %}selected{% endif %}>All</option>
                 <option value="infant" {% if mode == 'infant' %}selected{% endif %}>Infant (<7d)</option>
@@ -143,15 +145,12 @@ def base_html_header(
         <hr style="height:2px;border-width:0;color:gray;background-color:gray">
         """
             + f"""
-    {link_text}
-    {source_line}
-    <br>
-    <div style="background-color:#ffc0c0;">
+    <div>
     As more data is collected for a source, better tdescore classifiers can be used. <br>
     Look at the bolded classifier score to see which classifier is most reliable for each source.
-    </div>    
-
-    <hr style="width:50%;text-align:left;margin-left:0">
+    </div>
+    <hr style="height:2px;border-width:0;color:gray;background-color:gray">
+    {source_line}
     
     <p style="color:red;">{{{{ error }}}}</p>
     """
