@@ -12,6 +12,7 @@ from scantde.candidates import get_ztf_candidates, ztf_alerts_path
 from scantde.utils import get_known_tdes
 from scantde.selections.tdescore.apply import apply_tdescore
 from scantde.selections.nohostinfo.apply import apply_tdescore_nohostinfo
+from scantde.selections.offnuclear.apply import apply_tdescore_offnuclear
 from scantde.paths import base_html_dir
 
 logger = logging.getLogger(__name__)
@@ -90,4 +91,11 @@ def run():
         df.loc[mask, "tdescore_lc"] = True
 
     # Apply tdescore (no host info)
-    apply_tdescore_nohostinfo(df.copy(), base_output_dir=nightly_output_dir)
+    proc_df = apply_tdescore_nohostinfo(df.copy(), base_output_dir=nightly_output_dir)
+
+    # Do not repeat lightcurve analysis for already processed sources
+    if len(proc_df) > 0:
+        mask = df["ztf_name"].isin(proc_df["ztf_name"])
+        df.loc[mask, "tdescore_lc"] = True
+
+    apply_tdescore_offnuclear(df.copy(), base_output_dir=nightly_output_dir)

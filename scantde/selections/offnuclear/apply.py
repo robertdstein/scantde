@@ -7,9 +7,8 @@ import logging
 from pathlib import Path
 
 import pandas as pd
-
 from scantde.selections.utils.apply_thermal import apply_thermal
-from scantde.log import export_processing_log,  update_source_list
+from scantde.log import export_processing_log, update_source_list
 
 from scantde.errors import NoSourcesError
 
@@ -23,10 +22,10 @@ from scantde.utils.skyportal import export_to_skyportal
 logger = logging.getLogger(__name__)
 
 
-NOHOST_SELECTION = "tdescore_nohostinfo"
+OFFNUCLEAR_SELECTION = "tdescore_offnuclear"
 
 
-def apply_tdescore_nohostinfo(
+def apply_tdescore_offnuclear(
     df: pd.DataFrame,
     base_output_dir: Path,
 ):
@@ -40,7 +39,7 @@ def apply_tdescore_nohostinfo(
     datestr = base_output_dir.name
     proc_log = []
 
-    logger.info(f"Running selection {NOHOST_SELECTION} for {datestr}")
+    logger.info(f"Running selection {OFFNUCLEAR_SELECTION} for {datestr}")
 
     if len(df) == 0:
         logger.warning("Source table is empty, generating empty HTML table")
@@ -49,36 +48,36 @@ def apply_tdescore_nohostinfo(
     try:
 
         df, _, proc_log = apply_algorithmic_cuts(
-            df, selection=NOHOST_SELECTION, proc_log=proc_log,
-            require_nuclear=True, require_multidet=False
+            df, selection=OFFNUCLEAR_SELECTION, proc_log=proc_log,
+            require_nuclear=False, require_multidet=True
         )
 
         df, full_df, proc_log = download_data(
-            df, datestr=datestr, selection=NOHOST_SELECTION, proc_log=proc_log
+            df, datestr=datestr, selection=OFFNUCLEAR_SELECTION, proc_log=proc_log
         )
 
         apply_lightcurve(
             df, base_output_dir=base_output_dir,
         )
 
-        df = apply_thermal(
-            df, selection=NOHOST_SELECTION, base_output_dir=base_output_dir,
+        apply_thermal(
+            df, selection=OFFNUCLEAR_SELECTION, base_output_dir=base_output_dir,
         )
 
         mask = pd.notnull(df["tdescore"])
 
         df, proc_log = update_source_list(
-            df, proc_log, mask, selection=NOHOST_SELECTION,
+            df, proc_log, mask, selection=OFFNUCLEAR_SELECTION,
             stage="LC Fit failed"
         )
 
         if len(df) == 0:
             raise NoSourcesError("No sources left after lightcurve fit")
 
-        full_df = export_results(df, datestr=datestr, selection=NOHOST_SELECTION)
+        full_df = export_results(df, datestr=datestr, selection=OFFNUCLEAR_SELECTION)
 
         # Export sources to SkyPortal
-        export_to_skyportal(full_df[~full_df["is_junk"]])
+        export_to_skyportal(full_df[~full_df["is_junk"]], group_id=1860)
 
         logger.info(df)
 
@@ -86,6 +85,6 @@ def apply_tdescore_nohostinfo(
         logger.warning("Terminated early due to lack of sources")
         df = pd.DataFrame()
 
-    export_processing_log(proc_log, datestr=datestr, selection=NOHOST_SELECTION)
+    export_processing_log(proc_log, datestr=datestr, selection=OFFNUCLEAR_SELECTION)
     return df
 

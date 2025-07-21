@@ -83,6 +83,7 @@ def base_html_header(
         <select id="selectionDropdown" name="selectionDropdown">
             <option value="tdescore" {% if selection == 'tdescore' %}selected{% endif %}>tdescore (classic)</option>
             <option value="tdescore_nohostinfo" {% if selection == 'tdescore_nohostinfo' %}selected{% endif %}>tdescore (no host info)</option>
+            <option value="tdescore_offnuclear" {% if selection == 'tdescore_offnuclear' %}selected{% endif %}>tdescore (off-nuclear)</option>
         </select>
         <br>
         <br>
@@ -125,6 +126,8 @@ def base_html_header(
                     text = "tdescore (classic) classifier uses LC, nuclearity and host info to classify TDEs. It will not classify sources which are missing host parameters, e.g. if the host is not WISE-detected.";
                 } else if (value === "tdescore_nohostinfo") {
                     text = "tdescore (no host info) classifier uses only LC and nuclearity for classification. Probable AGN in WISE (W1-W2 > 0.7) are removed manually, but host info is not given to the classifier for scoring.";
+                } else if (value === "tdescore_offnuclear") {
+                    text = "tdescore (off-nuclear) classifier uses only LC for classification. It will classify everything.";
                 }
                 document.getElementById('selectionText').textContent = text;
             }

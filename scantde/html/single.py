@@ -72,7 +72,7 @@ def make_html_single(
     classifier_line = " | ".join(classifier_lines[::-1])
 
     name_line = (
-        rf'<b>{count_line}</b> <a href="search_by_name?name={name}"><b>'
+        rf'<b>{count_line}</b> <a href="search_by_name?selection={selection}&name={name}"><b>'
         rf'<font size="3">{name}</font></b></a>'
         rf' [junk={row["is_junk"]}] [lcscore={row['tdescore_lc_score']:.2f}]&nbsp;&nbsp;&nbsp;&nbsp;'
     )
@@ -85,7 +85,8 @@ def make_html_single(
     if prefix != "":
         name_line += f"Last Updated: {row['datestr']} &nbsp;&nbsp;&nbsp;&nbsp;"
 
-    tns_name = row["skyportal_tns_name"]
+    tns_name = row.get("skyportal_tns_name", None)
+
     if pd.notnull(tns_name):
         tns_name = strip_tns_name(tns_name)
         name_line += (
@@ -93,7 +94,9 @@ def make_html_single(
             f"AT{tns_name}</a>) &nbsp;&nbsp;&nbsp;&nbsp;"
         )
 
-    name_line += f"Skyportal Class: {row['skyportal_class']}&nbsp;&nbsp;&nbsp;&nbsp;"
+    sky_class = row.get("skyportal_class", None)
+
+    name_line += f"Skyportal Class: {sky_class}&nbsp;&nbsp;&nbsp;&nbsp;"
 
     if bool(row["is_tde"]):
         name_line += "This is a known TDE!&nbsp;&nbsp;&nbsp;&nbsp;"
@@ -115,9 +118,7 @@ def make_html_single(
         window = row["thermal_window"]
         window = float(window) if pd.notnull(window) else None
         gp_thermal_ext = f"{prefix}gp_thermal/{window}/None/{name}.png"
-        gp_thermal_path = base_output_dir / gp_thermal_ext
-        if gp_thermal_path.exists():
-            gp_line = f'<img src="{gp_thermal_ext}" height="250">'
+        gp_line = f'<img src="{gp_thermal_ext}" height="250">'
 
     html = f"""
     <div style="background-color:#E8F8F5;">

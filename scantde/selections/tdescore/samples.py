@@ -36,8 +36,7 @@ def export_thermal_selection(df: pd.DataFrame, window: float, group_id: int):
     Function to manage the 30 day selection
     """
     df_cut = selection_thermal(df, window=window)
-    print(f"Exporting {len(df_cut)} sources to "
-          f"SkyPortal with group_id {group_id} and window {window} days")
+    print(f"Exporting {len(df_cut)} sources to SkyPortal with group_id {group_id} and window {window} days")
     export_to_skyportal(df_cut, group_id=group_id)
 
 

@@ -26,7 +26,7 @@ from tdescore.lightcurve.thermal import (
 
 from scantde.selections.utils.algorithmic_cuts import apply_algorithmic_cuts
 from scantde.selections.utils.classifiers import apply_classifier
-from scantde.utils.skyportal import export_to_skyportal, download_from_skyportal
+from scantde.utils.skyportal import export_to_skyportal
 from scantde.log import export_processing_log
 
 from scantde.log import update_source_list
@@ -58,6 +58,8 @@ def apply_tdescore(
 
     datestr = base_output_dir.name
 
+    logger.info(f"Running selection {TDESCORE_SELECTION} for {datestr}")
+
     proc_log = []
 
     if len(df) == 0:
@@ -67,7 +69,7 @@ def apply_tdescore(
     try:
         df, full_df, proc_log = apply_algorithmic_cuts(
             df, selection=TDESCORE_SELECTION, proc_log=proc_log,
-            require_nuclear=True
+            require_nuclear=True, require_multidet=False
         )
 
         # Apply the host classifier, which includes WISE data
@@ -109,7 +111,7 @@ def apply_tdescore(
         full_df = export_results(df, datestr=datestr, selection=TDESCORE_SELECTION)
 
         # Export sources to SkyPortal
-        export_to_skyportal(full_df)
+        export_to_skyportal(full_df[~full_df["is_junk"]])
 
         logger.info(df)
 

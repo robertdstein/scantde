@@ -37,6 +37,7 @@ def apply_algorithmic_cuts(
     selection: str,
     proc_log: list[ProcStage],
     require_nuclear: bool = True,
+    require_multidet: bool = True,
     cut_wise: bool = True,
 ) -> tuple[pd.DataFrame, pd.DataFrame, list[ProcStage]]:
     """
@@ -56,8 +57,30 @@ def apply_algorithmic_cuts(
 
     proc_log = update_processing_log(proc_log, "Initial", df)
 
-    # Deduplicate
+    # Remove stars
+    mask = (df["sgscore1"] < MAX_SGSCORE) | (df["sgscore1"] == -999.0) | (
+                df["distpsnr1"] > CROSSMATCH_RADIUS)
+    df = df[mask].copy()
+    logger.info(
+        f"Applying sgscore cut, leaving {len(df)} sources including {sum(df['is_tde'])} TDEs")
+    proc_log = update_processing_log(
+        proc_log, "Algorithmic cuts - sgscore", df
+    )
+    if len(df) == 0:
+        raise NoSourcesError("No sources left after cut")
 
+    if require_multidet:
+        # Remove sources with 1 detection
+        mask = df["ndethist"] > 1
+        df, proc_log = update_source_list(
+            df, proc_log, mask, selection=selection,
+            stage="ndethist > 1", export_db=False
+        )
+
+        if len(df) == 0:
+            raise NoSourcesError("No sources left after ndethist cut")
+
+    # Deduplicate
     logger.info("Deduplicating sources")
 
     new = []
@@ -74,17 +97,6 @@ def apply_algorithmic_cuts(
     logger.info(f"Have {len(df)} unique sources, including {sum(df['is_tde'])} TDEs")
 
     proc_log = update_processing_log(proc_log, "De-duplicated", df)
-
-    # Remove stars
-    mask = (df["sgscore1"] < MAX_SGSCORE) | (df["sgscore1"] == -999.0) | (df["distpsnr1"] > CROSSMATCH_RADIUS)
-    df = df[mask].copy()
-    logger.info(
-        f"Applying sgscore cut, leaving {len(df)} sources including {sum(df['is_tde'])} TDEs")
-    proc_log = update_processing_log(
-        proc_log, "Algorithmic cuts - sgscore", df
-    )
-    if len(df) == 0:
-        raise NoSourcesError("No sources left after cut")
 
     # Remove galactic sources
     c = SkyCoord(ra=df["ra"].values, dec=df["dec"].values, unit="deg")
@@ -168,5 +180,6 @@ def apply_algorithmic_cuts(
             df, proc_log, ~mask, selection=selection,
             stage="CatWISE cuts"
         )
+        full_df = combine_all_sources(df.copy(), save=False)
     
     return df, full_df, proc_log
