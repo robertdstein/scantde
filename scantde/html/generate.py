@@ -3,7 +3,7 @@ from scantde.paths import sym_dir
 
 from scantde.database.search import load_by_name
 from scantde.io import load_results
-from scantde.log import load_processing_log, merge_processing_logs, update_processing_log
+from scantde.log import load_processing_log, merge_processing_logs, update_source_list, update_processing_log
 
 from scantde.html.make_html import make_html_single, make_daily_html_table
 import numpy as np
@@ -98,14 +98,19 @@ def generate_html_by_date(
                 continue
 
     mask = df["tdescore"] > 0.01
-    proc_log = update_processing_log(proc_log, "TDE Score Filter", df)
-    df = df[mask]
+    df, proc_log = update_source_list(
+        df, proc_log, mask, selection=selection,
+        stage="TDE Score > 0.01", export_db=False
+    )
 
     if hide_junk & (mode != "junk"):
         # Remove junk candidates
         mask = ~(df["is_junk"])
-        proc_log = update_processing_log(proc_log, "Remove junk candidates", df)
-        df = df[mask]
+
+        df, proc_log = update_source_list(
+            df, proc_log, mask, selection=selection,
+            stage="Remove junk candidates", export_db=False
+        )
 
     mask = np.ones(len(df), dtype=bool)
 
@@ -118,8 +123,14 @@ def generate_html_by_date(
     elif mode == "junk":
         mask *= df["is_junk"]
 
-    proc_log = update_processing_log(proc_log, "Web Filters", df)
-    df = df[mask]
+    elif mode == "bright":
+        mask *= df["magpsf"] < 19.0
+
+    df, proc_log = update_source_list(
+        df, proc_log, mask, selection=selection,
+        stage=f"Mode: {mode}", export_db=False
+    )
+
     proc_log = update_processing_log(proc_log, "Final", df)
 
     df.sort_values(by=["tdescore"], ascending=False, inplace=True)

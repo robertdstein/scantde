@@ -47,7 +47,8 @@ dependencies = [
     "sqlmodel",
     "python-dotenv",
     "flask",
-    "Flask-SQLAlchemy"
+    "Flask-SQLAlchemy",
+    "pydantic",
 ]
 [project.optional-dependencies]
 dev = [
@@ -66,5 +67,4 @@ profile = "black"
 
 [project.scripts]
 scantde-run = "scantde.__main__:run"
-scantde-html = "scantde.__main__:rebuild_html"
-scantde-publish = "scantde.publish:publish"
+scantde-server = "scantde.__main__:server"

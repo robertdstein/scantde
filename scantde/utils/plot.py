@@ -14,6 +14,9 @@ from tdescore.download.legacy_survey import default_catalog
 from astropy.cosmology import Planck18 as cosmo
 import numpy as np
 
+from tqdm import tqdm
+from astropy.table import Table
+
 
 
 def create_lightcurve_plots(source_table: pd.DataFrame, base_output_dir: Path):
@@ -27,7 +30,7 @@ def create_lightcurve_plots(source_table: pd.DataFrame, base_output_dir: Path):
     fig_dir = base_output_dir / "lightcurves"
     fig_dir.mkdir(parents=True, exist_ok=True)
 
-    for i, row in source_table.iterrows():
+    for i, row in tqdm(source_table.iterrows(), total=len(source_table)):
         source_name = row["ztf_name"]
 
         fig = plt.figure(figsize=(FIG_WIDTH, FIG_HEIGHT))

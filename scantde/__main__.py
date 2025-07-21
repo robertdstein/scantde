@@ -98,4 +98,5 @@ def run():
         mask = df["ztf_name"].isin(proc_df["ztf_name"])
         df.loc[mask, "tdescore_lc"] = True
 
+    # Apply tdescore (offnuclear)
     apply_tdescore_offnuclear(df.copy(), base_output_dir=nightly_output_dir)

@@ -173,7 +173,7 @@ def apply_algorithmic_cuts(
     logger.info("Combining all crossmatch data")
     full_df = combine_all_sources(df.copy(), save=False)
 
-    if cut_wise:
+    if cut_wise and "catwise_w1_m_w2" in full_df.columns:
         # Remove sources with WISE data that is AGN-ish
         mask = (full_df["catwise_w1_m_w2"] > 0.7)
         df, proc_log = update_source_list(

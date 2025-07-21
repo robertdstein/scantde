@@ -34,6 +34,7 @@ def apply_thermal(
 
     shap_base_dir = base_output_dir / f"{selection}/shap"
 
+    df.reset_index(drop=True, inplace=True)
     full_df = combine_all_sources(df, save=False)
 
     best_windows = []
@@ -79,10 +80,15 @@ def apply_thermal(
     full_df = combine_all_sources(df, save=False)
 
     for window in windows:
+
         scores, nan_mask = apply_classifier(
             full_df, f"thermal_{window}", selection=selection, explain=True,
             shap_base_dir=shap_base_dir
         )
+
+        mask = df["thermal_window"] == window \
+            if window is not None else df["thermal_window"].isnull()
+
         base_name = f"thermal_{window:.0f}" if window is not None else "thermal_all"
         label = f"tdescore_{base_name}"
 
@@ -92,9 +98,9 @@ def apply_thermal(
 
         df[label] = np.nan
         df.loc[~nan_mask, [label]] = scores
-        df.loc[~nan_mask, ["tdescore"]] = scores
-        df.loc[~nan_mask, ["tdescore_best"]] = base_name
-        df.loc[~nan_mask, ["tdescore_high_noise"]] = full_df[f"thermal_{window}d_high_noise"]
-        df.loc[~nan_mask, ["tdescore_lc_score"]] = full_df[f"thermal_{window}d_score"]
+        df.loc[(~nan_mask) & mask, ["tdescore"]] = scores[mask[~nan_mask]]
+        df.loc[(~nan_mask) & mask, ["tdescore_best"]] = base_name
+        df.loc[(~nan_mask) & mask, ["tdescore_high_noise"]] = full_df[f"thermal_{window}d_high_noise"][mask]
+        df.loc[(~nan_mask) & mask, ["tdescore_lc_score"]] = full_df[f"thermal_{window}d_score"][mask]
 
     return df
