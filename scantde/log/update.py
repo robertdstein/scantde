@@ -52,7 +52,7 @@ def update_source_list(
     if export_db:
         rejected_sources = df[~mask].copy()
         rejected_sources["fail_step"] = stage
-        export_to_db(rejected_sources, selection=selection, update_existing=False)
+        export_to_db(rejected_sources, selection=selection, update_existing=True)
 
     if len(df) == 0:
         raise NoSourcesError("No sources left after cut")

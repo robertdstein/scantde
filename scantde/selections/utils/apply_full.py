@@ -29,6 +29,8 @@ def apply_full(
     df["tdescore_full"] = np.nan
     df.loc[~nan_mask, ["tdescore_full"]] = scores
 
+    df["age_estimate"] = full_df["age"]
+
     return df
 
     # high_noise_mask = pd.notnull(full_df["high_noise"]) & full_df["high_noise"]

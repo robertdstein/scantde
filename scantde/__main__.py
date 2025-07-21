@@ -66,6 +66,8 @@ def run():
     df.set_index("source_name", inplace=True)
     df["is_tde"] = df["name"].isin(all_known_tdes)
 
+    df["age_estimate"] = None
+
     df["tdescore"] = None
     df["tdescore_best"] = None
     df["tdescore_high_noise"] = False

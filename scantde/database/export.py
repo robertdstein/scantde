@@ -20,6 +20,7 @@ def update_source_table(df: pd.DataFrame, selection: str, update_existing: bool 
     """
     check_tables_exist(selection=selection)
     engine = get_engine(selection)
+
     with Session(engine) as session:
         for idx, row in df.iterrows():
 
@@ -33,11 +34,18 @@ def update_source_table(df: pd.DataFrame, selection: str, update_existing: bool 
                 session.add(source)
                 session.commit()
             elif update_existing:
-                source = session.get(NuclearSource, row["name"])
-                for key, value in row.to_dict().items():
-                    if key in source.__dict__.keys():
-                        setattr(source, key, value)
-                session.commit()
+                new_datestr = int(row["latest_datestr"])
+                db_datestr =  int(source.latest_datestr)
+                if new_datestr >= db_datestr:
+                    for key, value in row.to_dict().items():
+                        if key in source.__dict__.keys():
+                            setattr(source, key, value)
+                    session.commit()
+                else:
+                    logger.debug(
+                        f"Skipping update for {row['name']}, because it is for "
+                        f"an older night {new_datestr} "
+                        f"than the existing entry {db_datestr}")
             else:
                 logger.debug(f"Source {row['name']} already exists")
 
@@ -91,4 +99,5 @@ def export_to_db(df: pd.DataFrame, selection: str, update_existing: bool = True)
         df["first_detected"] = [
             Time(x, format="jd").to_datetime() for x in df["jdstarthist"]
         ]
+        df["age"] = df["age_estimate"]
         update_source_table(df, selection=selection, update_existing=update_existing)

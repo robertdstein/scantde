@@ -52,4 +52,6 @@ def apply_infant(
     df.loc[~nan_mask, ["tdescore"]] = scores
     df.loc[~nan_mask, ["tdescore_best"]] = "week"
 
+    df["age_estimate"] = full_df["age"]
+
     return df, proc_log
