@@ -1,12 +1,19 @@
 import pandas as pd
 from scantde.paths import sym_dir
 
-from scantde.database.search import load_by_name
+from scantde.database.search import load_by_name, query_by_name
 from scantde.io import load_results
 from scantde.log import load_processing_log, merge_processing_logs, update_source_list, update_processing_log
+from scantde.errors import NoSourcesError
 
 from scantde.html.make_html import make_html_single, make_daily_html_table
 import numpy as np
+
+import logging
+
+logger = logging.getLogger(__name__)
+
+FALLBACK_COLUMNS = ["name", "tdescore", "tdescore_best", "is_junk", "magpsf", "is_tde"]
 
 
 def generate_html_by_name(name: str, selection: str) -> str:
@@ -19,8 +26,44 @@ def generate_html_by_name(name: str, selection: str) -> str:
     """
     row = load_by_name(name, selection=selection)
 
+    db_match = query_by_name(
+        name, selection=selection
+    )
+    print(db_match)
+
     if row is None:
-        return f"<p style='color:red;'>No cached results found for {name}</p>",
+        row = db_match.copy()
+        row["ra"], row["dec"] = row["latest_ra"], row["latest_dec"]
+        row["thermal_window"] = None
+        row["tdescore_lc_score"] = -1.
+        row.replace({None: np.nan}, inplace=True)
+
+    # if name:
+    #     res = query_by_name(name, selection=selection)
+    #     if res is not None:
+    #         columns = sorted(res.index.tolist())
+    #         row = res
+    #         extra_html = generate_html_by_name(name, selection=selection)
+    #     else:
+    #         error = f"No result found for {name}"
+    # else:
+    #     error = "Please enter a name."
+    # html = DEFAULT_HTML + '''
+    # {{ extra_html|safe }}
+    # {% if row is not none %}
+    # <h2>Database Results for: {{ row['name'] }}</h2>
+    #   <table border="1">
+    #     <tr><th>Field</th><th>Value</th></tr>
+    #     {% for col in columns %}
+    #       <tr><td>{{ col }}</td><td>{{ row[col] }}</td></tr>
+    #     {% endfor %}
+    #   </table>
+    # {% endif %}
+    # '''
+
+    # if row is None:
+    #     row = pd.Series({"latest_datestr": None, "thermal_window": None, "ztf_name": name, "tdescore_best": None, "is_junk": False, "tdescore_lc_score": -1, "age": -1})
+        # return f"<p style='color:red;'>No cached results found for {name}</p>",
 
     row["datestr"] = row["latest_datestr"]
     if pd.isnull(row["thermal_window"]):
@@ -69,7 +112,11 @@ def generate_html_by_date(
     :param mode: str mode of operation
     :return: HTML string
     """
-    df = load_df(datestr, selection=selection)
+    try:
+        df = load_df(datestr, selection=selection)
+    except FileNotFoundError:
+        logger.warning(f"No cached results found for {datestr}")
+        df = pd.DataFrame(columns=FALLBACK_COLUMNS)
 
     proc_log = load_processing_log(datestr, selection=selection)
 
@@ -97,39 +144,45 @@ def generate_html_by_date(
                 print(f"File not found for date: {date}")
                 continue
 
-    mask = df["tdescore"] > 0.01
-    df, proc_log = update_source_list(
-        df, proc_log, mask, selection=selection,
-        stage="TDE Score > 0.01", export_db=False
-    )
+    try:
 
-    if hide_junk & (mode != "junk"):
-        # Remove junk candidates
-        mask = ~(df["is_junk"])
+        mask = df["tdescore"] > 0.01
+        df, proc_log = update_source_list(
+            df, proc_log, mask, selection=selection,
+            stage="TDE Score > 0.01", export_db=False
+        )
+
+        if hide_junk & (mode != "junk"):
+            # Remove junk candidates
+            mask = ~(df["is_junk"])
+
+            df, proc_log = update_source_list(
+                df, proc_log, mask, selection=selection,
+                stage="Remove junk candidates", export_db=False
+            )
+
+        mask = np.ones(len(df), dtype=bool)
+
+        if mode == "infant":
+            mask *= df["age"] < 7.
+
+        elif mode == "has-lc":
+            mask *= ~df["tdescore_best"].isin(["infant", "week", "month"])
+
+        elif mode == "junk":
+            mask *= df["is_junk"]
+
+        elif mode == "bright":
+            mask *= df["magpsf"] < 19.0
 
         df, proc_log = update_source_list(
             df, proc_log, mask, selection=selection,
-            stage="Remove junk candidates", export_db=False
+            stage=f"Mode: {mode}", export_db=False
         )
 
-    mask = np.ones(len(df), dtype=bool)
-
-    if mode == "infant":
-        mask *= df["age"] < 7.
-
-    elif mode == "has-lc":
-        mask *= ~df["tdescore_best"].isin(["infant", "week", "month"])
-
-    elif mode == "junk":
-        mask *= df["is_junk"]
-
-    elif mode == "bright":
-        mask *= df["magpsf"] < 19.0
-
-    df, proc_log = update_source_list(
-        df, proc_log, mask, selection=selection,
-        stage=f"Mode: {mode}", export_db=False
-    )
+    except NoSourcesError:
+        logger.warning(f"No cached results found for {datestr}")
+        df = pd.DataFrame(columns=FALLBACK_COLUMNS)
 
     proc_log = update_processing_log(proc_log, "Final", df)
 

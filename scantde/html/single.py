@@ -39,19 +39,34 @@ def make_html_single(
 
     prefix = f"{Path(prefix) / str(row["datestr"])}/"
 
-    name = row["ztf_name"]
+    name = row["name"]
 
-    lightcurve_path = f"{prefix}lightcurves/{name}.png"
+    lightcurve_ext = f"{prefix}lightcurves/{name}.png"
+    lightcurve_path = base_output_dir / lightcurve_ext
+    if lightcurve_path.exists():
+        lightcurve_line = f'<img src="{lightcurve_ext}" height="240">'
+    else:
+        lightcurve_line = ""
 
+    # Get appropriate shap path
     sub_dir = row["tdescore_best"]
 
-    if sub_dir[-1].isdigit():
+    if str(sub_dir)[-1].isdigit():
         chunks = sub_dir.split("_")
         chunks[-1] = str(float(chunks[-1])) # Ensure the window is formatted correctly
         sub_dir = "_".join(chunks)
 
-    shap_path = f"{prefix}{selection}/shap/{sub_dir}/{name}.png"
+    elif sub_dir == "thermal_all":
+        sub_dir = "thermal_None"
 
+    shap_ext = f"{prefix}{selection}/shap/{sub_dir}/{name}.png"
+    shap_path = base_output_dir / shap_ext
+    if shap_path.exists():
+        shap_line = f'<img src="{shap_ext}" height="220">'
+    else:
+        shap_line = ""
+
+    # Get the line with classifier scores
     classifier_lines = []
 
     for classifier in classifiers[::-1]:
@@ -114,7 +129,7 @@ def make_html_single(
 
     if gp_path.exists() & (row["tdescore_best"] == "full"):
         gp_line = f'<img src="{gp_ext}" height="250">'
-    elif "thermal" in row["tdescore_best"]:
+    elif "thermal" in str(row["tdescore_best"]):
         window = row["thermal_window"]
         window = float(window) if pd.notnull(window) else None
         gp_thermal_ext = f"{prefix}gp_thermal/{window}/None/{name}.png"
@@ -134,8 +149,8 @@ def make_html_single(
     <br>
 
     <div class="row">
-    <img src="{lightcurve_path}" height="240">
-    <img src="{shap_path}" height="220">
+    {lightcurve_line}
+    {shap_line}
     {gp_line}
 
     </div>

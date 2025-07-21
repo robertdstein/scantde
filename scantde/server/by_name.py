@@ -1,8 +1,6 @@
-import pandas as pd
 from flask import Blueprint, request, render_template_string
 from scantde.database.search import query_by_name
 from scantde.html.generate import generate_html_by_name
-from scantde.html.header import base_html_header
 from scantde.server.index import DEFAULT_HTML
 
 from datetime import datetime
