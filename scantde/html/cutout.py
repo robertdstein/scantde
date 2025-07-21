@@ -77,7 +77,9 @@ def generate_cutout_html(
     ps1_html = generate_ps1_html(source, prefix=prefix)
     ls_html = generate_ls_html(source, prefix=prefix)
 
-    cutout_html = f"{ps1_html}{ls_html} <br>"
+    cutout_html = f"""
+    {ps1_html}{ls_html}
+    """
 
     return cutout_html
 

@@ -15,7 +15,7 @@ def base_html_header(
         source_line = ""
     else:
         source_line = (
-            f"Search Results:"
+            f"Search Results: "
             f"{len(sources)} Transients Passed, "
             f"including {sources['is_tde'].sum()} known TDEs. <br>"
             '<hr style="height:2px;border-width:0;color:gray;background-color:gray">'

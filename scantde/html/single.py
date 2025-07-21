@@ -138,11 +138,31 @@ def make_html_single(
         gp_thermal_ext = f"{night_prefix}gp_thermal/{window}/None/{name}.png"
         gp_line = f'<img src="{gp_thermal_ext}" height="250">'
 
-    cutout_line = generate_cutout_html(source=row, prefix=prefix) \
-        if include_cutout else ""
+    if include_cutout:
+        cutout_line = generate_cutout_html(source=row, prefix=prefix)
+
+        img_html = f"""
+            <br>
+            <div class="row">
+            {cutout_line}{shap_line}
+            </div>
+            <div class="row">
+            {lightcurve_line}
+            {gp_line}
+            </div>
+        """
+
+    else:
+        img_html = f"""
+            <div class="row", "text-align:center;">
+            {lightcurve_line}
+            {shap_line}
+            {gp_line}
+            </div>
+        """
 
     html = f"""
-    <div style="background-color:#E8F8F5;">
+    <div style="background-color:#FF5F1520;">
     {name_line}
     <a href=#top>[Back to Top]</a>
     <br>
@@ -153,14 +173,7 @@ def make_html_single(
     {classifier_line}
     <br>
     </div>
-    {cutout_line}
-
-    <div class="row">
-    {lightcurve_line}
-    {shap_line}
-    {gp_line}
-
-    </div>
+    {img_html}
     <hr style="height:2px;border-width:0;color:gray;background-color:gray">
     """
 
