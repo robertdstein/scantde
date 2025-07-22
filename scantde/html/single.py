@@ -1,8 +1,6 @@
 import pandas as pd
 from pathlib import Path
 
-from scantde.utils.tns import strip_tns_name
-
 from scantde.html.links import make_page_links
 
 from tdescore.lightcurve.extinction import get_extinction_correction, wavelengths, extra_wavelengths
@@ -103,15 +101,6 @@ def make_html_single(
     if prefix != "":
         name_line += f"Last Updated: {row['datestr']} &nbsp;&nbsp;&nbsp;&nbsp;"
 
-    tns_name = row.get("skyportal_tns_name", None)
-
-    if pd.notnull(tns_name):
-        tns_name = strip_tns_name(tns_name)
-        name_line += (
-            f' (TNS: <a href="https://wis-tns.weizmann.ac.il/object/{tns_name}" target="_blank">'
-            f"AT{tns_name}</a>) &nbsp;&nbsp;&nbsp;&nbsp;"
-        )
-
     sky_class = row.get("skyportal_class", None)
 
     name_line += f"Skyportal Class: {sky_class}&nbsp;&nbsp;&nbsp;&nbsp;"
@@ -168,7 +157,7 @@ def make_html_single(
     <br>
     {extinction_line}
     <br>
-    {make_page_links(name)}
+    {make_page_links(row)}
     <br>
     {classifier_line}
     <br>

@@ -147,6 +147,9 @@ def generate_html_by_date(
         elif mode == "junk":
             mask *= df["is_junk"]
 
+        elif mode == "dwarf":
+            mask *= df["is_dwarf"]
+
         elif mode == "bright":
             mask *= df["magpsf"] < 19.0
 

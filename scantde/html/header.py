@@ -114,6 +114,7 @@ def base_html_header(
                 <option value="infant" {% if mode == 'infant' %}selected{% endif %}>Infant (<7d)</option>
                 <option value="has-lc" {% if mode == 'has-lc' %}selected{% endif %}>Has GP fit</option>
                 <option value="bright" {% if mode == 'bright' %}selected{% endif %}>Bright (m<19)</option>
+                <option value="dwarf" {% if mode == 'dwarf' %}selected{% endif %}>Dwarf (Mr<-19) | (mr>22)</option>
                 <option value="junk" {% if mode == 'junk' %}selected{% endif %}>Junk</option>
             </select>
             <button type="submit">Search by Date</button>

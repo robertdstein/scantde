@@ -4,6 +4,7 @@ from pathlib import Path
 from scantde.utils.plot import create_lightcurve_plots
 from tdescore.sncosmo.run_sncosmo import batch_sncosmo
 from tdescore.lightcurve.analyse import batch_analyse
+from tdescore.combine.parse import combine_all_sources
 
 import logging
 
@@ -16,7 +17,8 @@ def apply_lightcurve(
     base_output_dir: Path,
 ):
     logger.info("Making lightcurve plots")
-    create_lightcurve_plots(df, base_output_dir)  # FIXME: full_df ?
+    full_df = combine_all_sources(df)
+    create_lightcurve_plots(full_df, base_output_dir)
 
     logger.info("Running GP / SNcosmo analysis on full lightcurve data")
 

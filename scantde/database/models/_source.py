@@ -21,6 +21,7 @@ class NuclearSource(SQLModel, table=True):
     sgscore1: float = Field(default=None)
     is_tde: bool = Field(default=False)
     is_junk: bool = Field(default=False)
+    is_dwarf: bool = Field(default=False)
     age: Optional[float] = Field(default=None)
     fail_step: Optional[str] = Field(default=None)
     tdescore: Optional[float] = Field(default=None)

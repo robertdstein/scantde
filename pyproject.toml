@@ -49,6 +49,8 @@ dependencies = [
     "flask",
     "Flask-SQLAlchemy",
     "pydantic",
+    "ztfquery",
+    "gunicorn"
 ]
 [project.optional-dependencies]
 dev = [
@@ -67,4 +69,4 @@ profile = "black"
 
 [project.scripts]
 scantde-run = "scantde.__main__:run"
-scantde-server = "scantde.__main__:server"
+scantde-server = "scantde.server.__main__:launch_server"

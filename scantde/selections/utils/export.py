@@ -6,6 +6,7 @@ from scantde.io import save_candidates, save_results
 
 from scantde.log import export_to_db
 from scantde.selections.utils.tag_junk import tag_junk
+from scantde.selections.utils.tag_dwarf import tag_dwarf
 from scantde.utils.slack import publish
 from scantde.utils.cutouts import batch_create_cutouts
 
@@ -19,6 +20,9 @@ def export_results(df: pd.DataFrame, datestr: str, selection: str) -> pd.DataFra
     :param selection: Selection name to use for the classifier (e.g. 'tdescore')
     :return: Final DataFrame with junk tags applied
     """
+
+    dwarf = tag_dwarf(df)
+    df["is_dwarf"] = dwarf
 
     # Batch download the cutouts
     batch_create_cutouts(df)
