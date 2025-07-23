@@ -29,7 +29,7 @@ def search_by_date() -> str:
             datestr, selection=selection, lookback_days=num_days, hide_junk=hide_junk,
             mode=mode, include_cutout=show_cutout
         )
-    except FileNotFoundError:
+    except KeyboardInterrupt:
         error = f"No cached results found for {date}. Please try a different date."
 
     return render_template_string(html, today=date, lookback_days=num_days, hide_junk=hide_junk, error=error, mode=mode, selection=selection, show_cutout=show_cutout)
