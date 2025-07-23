@@ -93,7 +93,11 @@ def generate_html_by_date(
         logger.warning(f"No cached results found for {datestr}")
         df = pd.DataFrame(columns=FALLBACK_COLUMNS)
 
-    proc_log = load_processing_log(datestr, selection=selection)
+    try:
+        proc_log = load_processing_log(datestr, selection=selection)
+    except FileNotFoundError:
+        logger.warning(f"No processing log found for {datestr}")
+        proc_log = []
 
     if lookback_days > 1:
         # Go in reverse chronological order
