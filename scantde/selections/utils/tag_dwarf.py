@@ -10,7 +10,7 @@ def tag_dwarf(df) -> list[bool]:
 
     cols = [x for x in full_df.columns if "Mean" in x]
 
-    r_mag = full_df["rMeanKronMag"]
+    r_mag = full_df["rMeanKronMag"].astype(float)
 
     try:
         redshift = full_df[f"{default_catalog}_z_spec"].copy()
@@ -26,16 +26,15 @@ def tag_dwarf(df) -> list[bool]:
     if mask.any():
         redshift[mask] = full_df[f"{default_catalog}_z_phot_median"][mask].copy()
 
-    print(redshift)
     mask = pd.isnull(redshift) | (redshift < 0)
-    print(redshift[mask])
 
     # Calculate the luminosity distance in parsecs
-    luminosity_distance = cosmo.luminosity_distance(redshift.to_numpy(dtype=float)).to('pc').value
+    luminosity_distance = cosmo.luminosity_distance(redshift[~mask].to_numpy(dtype=float)).to('pc').value
     # Calculate the absolute magnitude using the distance modulus formula
     dm = 5 * (np.log10(luminosity_distance) - 1)
 
-    r_abs_mag = r_mag - dm
+    r_abs_mag = pd.Series([np.nan] * len(r_mag), index=r_mag.index)
+    r_abs_mag[~mask] = r_mag[~mask] - dm
 
     dwarf_mask = (r_abs_mag > -19.0) | (pd.isnull(r_abs_mag) & (r_mag > 22.0))
 

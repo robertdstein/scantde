@@ -2,6 +2,7 @@ import pandas as pd
 from scantde.database.models import NuclearSource
 from sqlmodel import Session
 from scantde.database.create import get_engine, check_tables_exist
+from erfa.core import ErfaError
 
 from astropy.time import Time
 
@@ -96,8 +97,15 @@ def export_to_db(df: pd.DataFrame, selection: str, update_existing: bool = True)
         df["latest_dec"] = df["dec"]
         df["latest_mag"] = df["magpsf"]
         df["latest_filter"] = df["fid"].map({1: "g", 2: "r", 3: "i"})
-        df["first_detected"] = [
-            Time(x, format="jd").to_datetime() for x in df["jdstarthist"]
-        ]
+
+        first_dets = []
+
+        for i, x in enumerate(df["jdstarthist"]):
+            try:
+                first_dets.append(Time(x, format="jd").to_datetime())
+            except ErfaError:
+                first_dets.append(Time(df.iloc[i]["jd"], format="jd").to_datetime())
+
+        df["first_detected"] = first_dets
         df["age"] = df["age_estimate"]
         update_source_table(df, selection=selection, update_existing=update_existing)

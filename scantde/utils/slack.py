@@ -10,21 +10,33 @@ from slack_sdk import WebClient
 from dotenv import load_dotenv
 import os
 from pathlib import Path
+from scantde.utils import get_current_datestr
 
 load_dotenv()
 
 logger = logging.getLogger(__name__)
 
 SLACK_TOKEN = os.getenv('SLACK_TOKEN')
-BASE_URL = os.getenv('BASE_URL', "http://127.0.0.1:5000")
+PUBLIC_URL = os.getenv('PUBLIC_URL', "http://127.0.0.1:5000")
 
 
 def publish(
-    url_ext: str,
+    datestr: str,
+    selection: str = "tdescore",
     slack_channel: str = "scanning-ztfo4",
+    url_ext: str = "lookback_days=1&hide_junk=on&mode=all",
 ):
-    url = Path(BASE_URL) / url_ext
-    print(f"Publishing to {url}")
+
+    if not datestr == get_current_datestr():
+        logger.info(f"Old date {datestr} provided, skipping slack publishing.")
+
+    base_url = f"search_by_date?selection={selection}&date={datestr}&{url_ext}"
+    url = Path(PUBLIC_URL) / base_url
+
+    print(url)
+    # print(f"Publishing to {url}")
+    #
+    # raise
 
 
     # if args.slack:

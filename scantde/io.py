@@ -54,9 +54,11 @@ def results_cache_filename(datestr: str, selection: str) -> Path:
     Get the cache filename for the results of TDEScore for a given date
 
     :param datestr: Date to get the cache filename for
+    :param selection: Selection type (e.g., 'tdescore')
     :return: Path Cache filename
     """
-    return base_html_dir / datestr / f"scantde_{selection}_results.json"
+    output_dir = candidates_cache_filename(datestr, selection).parent
+    return output_dir / f"scantde_{selection}_results.json"
 
 
 def save_results(datestr: str, selection: str, result_df: pd.DataFrame) -> None:
@@ -64,6 +66,7 @@ def save_results(datestr: str, selection: str, result_df: pd.DataFrame) -> None:
     Save the results of TDEScore to a cache file
 
     :param datestr: Date to save the results for
+    :param selection: Selection type (e.g., 'tdescore')
     :param result_df: pd.DataFrame Results to save
     :return: None
     """
@@ -78,6 +81,7 @@ def load_results(datestr: str, selection: str) -> pd.DataFrame:
     Load the results of TDEScore from a cache file
 
     :param datestr: Date to load the results for
+    :param selection: Selection type (e.g., 'tdescore')
     :return: pd.DataFrame Results
     """
     cache_filename = results_cache_filename(datestr, selection)

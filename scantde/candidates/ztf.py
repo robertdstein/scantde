@@ -13,7 +13,7 @@ from pathlib import Path
 import logging
 
 from astropy.time import Time
-from scantde.paths import get_night_output_dir
+from scantde.paths import get_input_cache
 
 from tdescore.utils.kowalski import get_kowalski
 
@@ -29,7 +29,7 @@ def ztf_alerts_path(datestr: str) -> Path:
     :param datestr: Date to get the ZTF alerts file for
     :return: Path to the ZTF alerts file
     """
-    output_dir = get_night_output_dir(datestr)
+    output_dir = get_input_cache(datestr)
     return output_dir / BASE_ZTF_NAME
 
 

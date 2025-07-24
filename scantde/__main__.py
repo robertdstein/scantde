@@ -6,7 +6,6 @@ import argparse
 import logging
 
 from scantde.utils import get_current_datestr
-from tdescore.combine.parse import combine_all_sources
 
 from scantde.candidates import get_ztf_candidates, ztf_alerts_path
 from scantde.utils import get_known_tdes
@@ -100,5 +99,5 @@ def run():
         mask = df["ztf_name"].isin(proc_df["ztf_name"])
         df.loc[mask, "tdescore_lc"] = True
 
-    # Apply tdescore (offnuclear)
+    # # Apply tdescore (offnuclear)
     apply_tdescore_offnuclear(df.copy(), base_output_dir=nightly_output_dir)

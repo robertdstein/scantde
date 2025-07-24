@@ -6,10 +6,7 @@ Module for integrating the TDEScore into the TDE pipeline.
 import logging
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
-from astropy.time import Time
-from tqdm import tqdm
 
 
 from tdescore.download.tns import download_tns_data
@@ -37,6 +34,7 @@ from scantde.selections.utils.export import export_results
 from scantde.selections.utils.apply_lightcurve import apply_lightcurve
 from scantde.selections.utils.apply_infant import apply_infant
 from scantde.selections.utils.apply_full import apply_full
+from scantde.utils.slack import publish
 
 
 logger = logging.getLogger(__name__)
@@ -109,6 +107,12 @@ def apply_tdescore(
         )
 
         full_df = export_results(df, datestr=datestr, selection=TDESCORE_SELECTION)
+
+        # Send to slack
+        publish(
+            datestr=datestr,
+            selection=TDESCORE_SELECTION,
+        )
 
         # Export sources to SkyPortal
         export_to_skyportal(full_df[~full_df["is_junk"]])

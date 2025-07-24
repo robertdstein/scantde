@@ -7,7 +7,7 @@ from scantde.io import save_candidates, save_results
 from scantde.log import export_to_db
 from scantde.selections.utils.tag_junk import tag_junk
 from scantde.selections.utils.tag_dwarf import tag_dwarf
-from scantde.utils.slack import publish
+from scantde.utils.sync import rsync_data
 from scantde.utils.cutouts import batch_create_cutouts
 
 def export_results(df: pd.DataFrame, datestr: str, selection: str) -> pd.DataFrame:
@@ -38,8 +38,6 @@ def export_results(df: pd.DataFrame, datestr: str, selection: str) -> pd.DataFra
     export_to_db(df, selection=selection)
     save_results(datestr=datestr, selection=selection, result_df=full_df)
     save_candidates(datestr=datestr, selection=selection, candidates=df)
-
-    url = f"search_by_date?selection={selection}&date={datestr}&lookback_days=1&hide_junk=on&mode=all"
-    publish(url)
+    rsync_data(datestr=datestr)
 
     return full_df

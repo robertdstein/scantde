@@ -24,6 +24,8 @@ from scantde.log.model import ProcStage
 from tdescore.combine.parse import combine_all_sources
 from tdescore.download.all import download_legacy_survey_data
 
+from scantde.selections.utils.extinction import append_extinction_to_df
+
 from astropy.time import Time
 
 logger = logging.getLogger(__name__)
@@ -57,6 +59,9 @@ def download_data(
 
     # Download legacy survey data (redshift - either specz or photz)
     download_legacy_survey_data(df.copy())
+
+    # Add extinction information to the DataFrame
+    df = append_extinction_to_df(df.copy())
 
     # Now load the full lightcurve data, including the info from alerts
     combine_raw_source_data(df[["ztf_name"]][~df["tdescore_lc"]])

@@ -62,9 +62,10 @@ def load_df(datestr: str, selection: str) -> pd.DataFrame:
     :param selection: str selection type (e.g., 'tdescore')
     :return: DataFrame of results
     """
-    df = load_results(datestr, selection=selection).copy()
+    df = load_results(datestr, selection=selection)
+    df = df.copy()
     df["datestr"] = datestr
-    df["thermal_window"].replace({np.nan: None}, inplace=True)
+    df["thermal_window"] = df["thermal_window"].replace({np.nan: None})
     return df
 
 

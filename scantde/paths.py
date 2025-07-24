@@ -2,6 +2,7 @@
 Module for defining paths used in the scantde package.
 """
 from pathlib import Path
+
 from dotenv import load_dotenv
 import os
 
@@ -20,17 +21,6 @@ else:
 
 tdescore_output_dir = base_output_dir / 'tdescore_output'
 tdescore_output_dir.mkdir(parents=True, exist_ok=True)
-
-
-def get_db_path(selection: str) -> Path:
-    """
-    Get the database path for a given selection type.
-
-    :param selection: Selection type (e.g., 'tdescore')
-    :return: Path to the database file for the given selection
-    """
-    return base_output_dir / f'scantde_{selection}.db'
-
 
 base_html_dir = base_output_dir / 'html'
 base_html_dir.mkdir(parents=True, exist_ok=True)
@@ -54,6 +44,46 @@ ml_dir.mkdir(exist_ok=True)
 cutout_dir = base_html_dir / 'cutouts'
 cutout_dir.mkdir(exist_ok=True)
 
+input_cache_dir = base_output_dir / 'input_cache'
+input_cache_dir.mkdir(parents=True, exist_ok=True)
+
+db_dir = base_output_dir / 'db'
+db_dir.mkdir(parents=True, exist_ok=True)
+
+
+def get_db_path(selection: str) -> Path:
+    """
+    Get the database path for a given selection type.
+
+    :param selection: Selection type (e.g., 'tdescore')
+    :return: Path to the database file for the given selection
+    """
+    return db_dir / f'scantde_{selection}.db'
+
+
+def get_input_cache(datestr: str) -> Path:
+    """
+    Get the input cache filename for a given date.
+
+    :param datestr: Date string in the format 'YYYYMMDD'
+    :return:
+    """
+    output_dir = input_cache_dir / f'{datestr}'
+    output_dir.mkdir(parents=True, exist_ok=True)
+    return output_dir
+
+
+def get_candidate_cache(datestr: str, selection: str) -> Path:
+    """
+    Get the cache filename for candidates for a given date and selection type.
+
+    :param datestr: Date string in the format 'YYYYMMDD'
+    :param selection: Selection type (e.g., 'tdescore')
+    :return: Path to the cache file for candidates
+    """
+    cache_dir = get_input_cache(datestr)
+    return cache_dir / f'/scantde_{selection}_candidates.json'
+
 
 def get_night_output_dir(datestr: str) -> Path:
     """
@@ -62,7 +92,7 @@ def get_night_output_dir(datestr: str) -> Path:
     :param datestr: Date string in the format 'YYYY-MM-DD'
     :return: Path to the output directory for the given date
     """
-    output_dir = base_output_dir / datestr
+    output_dir = base_output_dir / "results" / datestr
     output_dir.mkdir(parents=True, exist_ok=True)
     return output_dir
 

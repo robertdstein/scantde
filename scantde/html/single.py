@@ -3,14 +3,11 @@ from pathlib import Path
 
 from scantde.html.links import make_page_links
 
-from tdescore.lightcurve.extinction import get_extinction_correction, wavelengths, extra_wavelengths
 from tdescore.lightcurve.window import THERMAL_WINDOWS
 from scantde.html.cutout import generate_cutout_html
+from scantde.html.extinction import get_extinction_html
 
 CLASSIFIERS = ["host", "infant", "week"] + [f"thermal_{x:.0f}" if x is not None else "thermal_all" for x in THERMAL_WINDOWS] + ["full"]
-
-all_wavelengths = wavelengths.copy()
-all_wavelengths.update(extra_wavelengths)
 
 
 def make_html_single(
@@ -108,11 +105,7 @@ def make_html_single(
     if bool(row["is_tde"]):
         name_line += "This is a known TDE!&nbsp;&nbsp;&nbsp;&nbsp;"
 
-    extinction_line = "Extinction: "
-    ra, dec = row["ra"], row["dec"]
-    for f_name, wl in all_wavelengths.items():
-        extinction = get_extinction_correction(ra, dec, [wl])
-        extinction_line += f"{f_name}: {extinction[0]:.2f} &nbsp;&nbsp;"
+    extinction_line = get_extinction_html(row)
 
     gp_ext = f"{night_prefix}gp/None/{name}.png"
     gp_path = base_output_dir / gp_ext
