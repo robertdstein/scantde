@@ -6,8 +6,8 @@ from scantde.paths import db_dir, sym_dir, base_html_dir, get_night_output_dir, 
 import subprocess
 
 load_dotenv()
-HOST_BASE_URL = os.getenv("SERVER_BASE_URL", "remoteserver:/home/ubuntu/data/scantde/")
-target_base_dir = Path(HOST_BASE_URL)
+HOST_BASE_URL = os.getenv("SERVER_BASE_URL", None)
+target_base_dir = Path(HOST_BASE_URL) if HOST_BASE_URL else None
 
 
 def get_rsync_command(
@@ -46,6 +46,10 @@ def rsync_data(
     :param datestr: Date string in the format YYYYMMDD
     :return: None
     """
+
+    if target_base_dir is None:
+        print("No target base directory set. Skipping rsync.")
+        return
 
     copy_dirs = [
         db_dir,

@@ -6,6 +6,7 @@ from scantde.html.links import make_page_links
 from tdescore.lightcurve.window import THERMAL_WINDOWS
 from scantde.html.cutout import generate_cutout_html
 from scantde.html.extinction import get_extinction_html
+from scantde.html.host import get_host_html
 
 CLASSIFIERS = ["host", "infant", "week"] + [f"thermal_{x:.0f}" if x is not None else "thermal_all" for x in THERMAL_WINDOWS] + ["full"]
 
@@ -31,7 +32,6 @@ def make_html_single(
     :param include_cutout: bool Whether to include cutout images
     :return: str HTML
     """
-
     if classifiers is None:
         classifiers = CLASSIFIERS
 
@@ -87,7 +87,7 @@ def make_html_single(
     name_line = (
         rf'<b>{count_line}</b> <a href="search_by_name?selection={selection}&name={name}"><b>'
         rf'<font size="3">{name}</font></b></a>'
-        rf' [junk={row["is_junk"]}] [lcscore={row['tdescore_lc_score']:.2f}]&nbsp;&nbsp;&nbsp;&nbsp;'
+        rf' [junk={row["is_junk"]}] [lcscore={row['thermal_score']:.2f}]&nbsp;&nbsp;&nbsp;&nbsp;'
     )
 
     name_line += (
@@ -106,6 +106,7 @@ def make_html_single(
         name_line += "This is a known TDE!&nbsp;&nbsp;&nbsp;&nbsp;"
 
     extinction_line = get_extinction_html(row)
+    host_html = get_host_html(row)
 
     gp_ext = f"{night_prefix}gp/None/{name}.png"
     gp_path = base_output_dir / gp_ext
@@ -148,7 +149,7 @@ def make_html_single(
     {name_line}
     <a href=#top>[Back to Top]</a>
     <br>
-    {extinction_line}
+    {extinction_line} |&nbsp;&nbsp; {host_html}
     <br>
     {make_page_links(row)}
     <br>

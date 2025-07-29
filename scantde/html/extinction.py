@@ -11,7 +11,10 @@ def get_extinction_html(
     :param row: Row containing 'ra' and 'dec' columns.
     :return: HTML string with extinction corrections.
     """
-    extinction_line = "Extinction: "
-    for f_name in ext_keys:
-        extinction_line += f"{f_name.split('_')[-1]}: {row[f_name]:.2f} &nbsp;&nbsp;"
+    try:
+        extinction_line = "Extinction: "
+        for f_name in ext_keys:
+            extinction_line += f"{f_name.split('_')[-1]}: {row[f_name]:.2f} &nbsp;&nbsp;"
+    except KeyError:
+        extinction_line = "Extinction: Not available"
     return extinction_line

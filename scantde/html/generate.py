@@ -73,6 +73,7 @@ def generate_html_by_date(
     datestr: str,
     selection: str,
     lookback_days: int = 1,
+    min_score: float = 0.01,
     hide_junk: bool = False,
     include_cutout: bool = False,
     mode: str = "all"
@@ -82,6 +83,7 @@ def generate_html_by_date(
 
     :param datestr: str date string in 'YYYYMMDD' format
     :param selection: str selection type (e.g., 'tdescore')
+    :param min_score: float minimum score to filter candidates
     :param lookback_days: int number of days to look back
     :param hide_junk: bool whether to hide old infants
     :param include_cutout: bool whether to include cutout images
@@ -125,13 +127,6 @@ def generate_html_by_date(
                 continue
 
     try:
-
-        mask = df["tdescore"] > 0.01
-        df, proc_log = update_source_list(
-            df, proc_log, mask, selection=selection,
-            stage="TDE Score > 0.01", export_db=False
-        )
-
         if hide_junk & (mode != "junk"):
             # Remove junk candidates
             mask = ~(df["is_junk"])
@@ -139,6 +134,15 @@ def generate_html_by_date(
             df, proc_log = update_source_list(
                 df, proc_log, mask, selection=selection,
                 stage="Remove junk candidates", export_db=False
+            )
+
+        if min_score > 0.0:
+            # Filter candidates by minimum score
+            mask = df["tdescore"] >= min_score
+
+            df, proc_log = update_source_list(
+                df, proc_log, mask, selection=selection,
+                stage=f"Minimum score: {min_score}", export_db=False
             )
 
         mask = np.ones(len(df), dtype=bool)
@@ -156,7 +160,16 @@ def generate_html_by_date(
             mask *= df["is_dwarf"]
 
         elif mode == "bright":
-            mask *= df["magpsf"] < 19.0
+            mask *= (df["magpsf"] < 19.0) & (df["thermal_score"] > 0.5) & (df["age"] < 365.0)
+
+        elif mode == "nearby":
+            mask *= (df["dist_mpc"] < 150.0) & (df["thermal_score"] > 0.5) & (df["age"] < 365.0)
+
+        elif mode == "blue":
+            mask *= (df["thermal_log_temp_ll"] > 4.1) & (df["thermal_score"] > 0.5) & (df["age"] < 365.0)
+
+        elif mode == "red":
+            mask *= (df["thermal_log_temp_ul"] < 3.9) & (df["thermal_score"] > 0.5) & (df["age"] < 365.0)
 
         df, proc_log = update_source_list(
             df, proc_log, mask, selection=selection,
@@ -174,7 +187,7 @@ def generate_html_by_date(
 
     output_dir = sym_dir / "tdescore" / datestr
 
-    prefix = f"static"
+    prefix = "static"
 
     html = make_daily_html_table(
         source_table=df,

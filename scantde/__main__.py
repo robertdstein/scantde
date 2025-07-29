@@ -17,6 +17,72 @@ from scantde.paths import base_html_dir
 logger = logging.getLogger(__name__)
 
 
+def run_night(datestr: str | None, skip_lightcurve: bool = False, debug: bool = False):
+    """
+    Run the TDEScore integration for a single date
+    """
+    if datestr is None:
+        datestr = get_current_datestr()
+
+    if (not debug) & (not skip_lightcurve):
+        # Remove the nightly file to force a re-download
+        ztf_cache = ztf_alerts_path(datestr)
+        if ztf_cache.is_file():
+            logger.info(f"Re-downloading initial candidates for {datestr}")
+            ztf_cache.unlink(missing_ok=True)
+        else:
+            logger.info(f"Downloading initial candidates for {datestr}")
+
+    df = get_ztf_candidates(datestr)
+
+    df["tdescore_lc"] = skip_lightcurve
+
+    all_known_tdes = get_known_tdes()
+    logger.info(f"Have {len(all_known_tdes)} known TDEs")
+
+    df["latest_datestr"] = datestr
+    df["source_name"] = df["name"]
+    df.set_index("source_name", inplace=True)
+    df["is_tde"] = df["name"].isin(all_known_tdes)
+
+    df["age_estimate"] = None
+
+    df["tdescore"] = None
+    df["tdescore_best"] = None
+    df["tdescore_high_noise"] = False
+    df["tdescore_lc_score"] = None
+
+    df = df.sort_values(by=["is_tde", "name"], ascending=[False, False])
+    df.reset_index(drop=True, inplace=True)
+
+    if debug:
+        df = df[:2000]
+
+    nightly_output_dir = base_html_dir / datestr
+    nightly_output_dir.mkdir(parents=True, exist_ok=True)
+
+    logger.info(f"Running TDEScore integration for {datestr}")
+
+    # Apply tdescore (classic)
+    proc_df = apply_tdescore(df.copy(), base_output_dir=nightly_output_dir)
+
+    # Do not repeat lightcurve analysis for already processed sources
+    if len(proc_df) > 0:
+        mask = df["ztf_name"].isin(proc_df["ztf_name"])
+        df.loc[mask, "tdescore_lc"] = True
+
+    # Apply tdescore (no host info)
+    proc_df = apply_tdescore_nohostinfo(df.copy(), base_output_dir=nightly_output_dir)
+
+    # Do not repeat lightcurve analysis for already processed sources
+    if len(proc_df) > 0:
+        mask = df["ztf_name"].isin(proc_df["ztf_name"])
+        df.loc[mask, "tdescore_lc"] = True
+
+    # Apply tdescore (offnuclear)
+    apply_tdescore_offnuclear(df.copy(), base_output_dir=nightly_output_dir)
+
+
 def run():
     """
     Run the TDEScore integration for a given date
@@ -41,63 +107,41 @@ def run():
 
     datestr = args.night
 
+    run_night(
+        datestr=datestr,
+        skip_lightcurve=args.skip,
+        debug=args.debug
+    )
+
+
+def run_batch():
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument(
+        "-n", "--night", "--datestr",
+        type=str, help="Date to run the integration for", required=False,
+        dest="night"
+    )
+    argparser.add_argument(
+     "--lookback_nights",
+        type=int, help="Number of nights to ", required=False,
+        dest="lookback_nights", default=7
+    )
+    argparser.add_argument(
+        "-s", "--skip", help="Skip the lightcurve", default=False, action="store_true"
+    )
+    argparser.add_argument(
+        "--debug", help="Run in debug mode", default=False, action="store_true"
+    )
+    args = argparser.parse_args()
+
+    datestr = args.night
     if datestr is None:
         datestr = get_current_datestr()
 
-    if (not args.debug) & (not args.skip):
-        # Remove the nightly file to force a re-download
-        ztf_cache = ztf_alerts_path(datestr)
-        if ztf_cache.is_file():
-            logger.info(f"Re-downloading initial candidates for {datestr}")
-            ztf_cache.unlink(missing_ok=True)
-        else:
-            logger.info(f"Downloading initial candidates for {datestr}")
 
-    df = get_ztf_candidates(datestr)
 
-    df["tdescore_lc"] = args.skip
-
-    all_known_tdes = get_known_tdes()
-    logger.info(f"Have {len(all_known_tdes)} known TDEs")
-
-    df["latest_datestr"] = datestr
-    df["source_name"] = df["name"]
-    df.set_index("source_name", inplace=True)
-    df["is_tde"] = df["name"].isin(all_known_tdes)
-
-    df["age_estimate"] = None
-
-    df["tdescore"] = None
-    df["tdescore_best"] = None
-    df["tdescore_high_noise"] = False
-    df["tdescore_lc_score"] = None
-
-    df = df.sort_values(by=["is_tde", "name"], ascending=[False, False])
-    df.reset_index(drop=True, inplace=True)
-
-    if args.debug:
-        df = df[:2000]
-
-    nightly_output_dir = base_html_dir / datestr
-    nightly_output_dir.mkdir(parents=True, exist_ok=True)
-
-    logger.info(f"Running TDEScore integration for {datestr}")
-
-    # Apply tdescore (classic)
-    proc_df = apply_tdescore(df.copy(), base_output_dir=nightly_output_dir)
-
-    # Do not repeat lightcurve analysis for already processed sources
-    if len(proc_df) > 0:
-        mask = df["ztf_name"].isin(proc_df["ztf_name"])
-        df.loc[mask, "tdescore_lc"] = True
-
-    # Apply tdescore (no host info)
-    proc_df = apply_tdescore_nohostinfo(df.copy(), base_output_dir=nightly_output_dir)
-
-    # Do not repeat lightcurve analysis for already processed sources
-    if len(proc_df) > 0:
-        mask = df["ztf_name"].isin(proc_df["ztf_name"])
-        df.loc[mask, "tdescore_lc"] = True
-
-    # # Apply tdescore (offnuclear)
-    apply_tdescore_offnuclear(df.copy(), base_output_dir=nightly_output_dir)
+    # run_night(
+    #     datestr=datestr,
+    #     skip_lightcurve=args.skip,
+    #     debug=args.debug
+    # )

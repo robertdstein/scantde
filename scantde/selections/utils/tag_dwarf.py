@@ -5,10 +5,8 @@ from astropy.cosmology import Planck18 as cosmo
 import numpy as np
 
 
-def tag_dwarf(df) -> list[bool]:
+def tag_dwarf(df) -> pd.DataFrame:
     full_df = combine_all_sources(df, save=False)
-
-    cols = [x for x in full_df.columns if "Mean" in x]
 
     r_mag = full_df["rMeanKronMag"].astype(float)
 
@@ -30,12 +28,20 @@ def tag_dwarf(df) -> list[bool]:
 
     # Calculate the luminosity distance in parsecs
     luminosity_distance = cosmo.luminosity_distance(redshift[~mask].to_numpy(dtype=float)).to('pc').value
+
+    dist_mpc = np.ones_like(redshift, dtype=float) * np.nan
+    dist_mpc[~mask] = luminosity_distance / 1e6  # Convert parsecs to megaparsecs
+
     # Calculate the absolute magnitude using the distance modulus formula
     dm = 5 * (np.log10(luminosity_distance) - 1)
 
     r_abs_mag = pd.Series([np.nan] * len(r_mag), index=r_mag.index)
     r_abs_mag[~mask] = r_mag[~mask] - dm
 
-    dwarf_mask = (r_abs_mag > -19.0) | (pd.isnull(r_abs_mag) & (r_mag > 22.0))
+    df["host_r"] = r_mag
+    df["host_Mr"] = r_abs_mag
+    df["dist_mpc"] = dist_mpc
+    df["best_redshift"] = redshift
+    df["is_dwarf"] = (r_abs_mag > -19.0) | (pd.isnull(r_abs_mag) & (r_mag > 22.0))
 
-    return dwarf_mask
+    return df

@@ -18,13 +18,13 @@ def tag_junk(df) -> list[bool]:
 
     lc_score_mask = (full_df["tdescore_lc_score"] < 0.1) & (
         full_df["tdescore_best"].isin(
-            ["thermal_None", "thermal_365.0", "thermal_180.0"])
+            ["thermal_all", "thermal_365", "thermal_180"])
     )
 
     old_mask = (full_df["age"] > 500.0) & (full_df["tdescore"] < 0.5)
 
     ancient_mask = (full_df["age"] > 1000.0)
 
-    mask = old_infant_mask | jd_infant_mask | high_noise_mask | low_score_mask | lc_score_mask | old_mask | ancient_mask
+    mask = old_infant_mask | jd_infant_mask | high_noise_mask | lc_score_mask | old_mask | ancient_mask
 
     return mask

@@ -103,6 +103,8 @@ def base_html_header(
             Search by Date: <input type="date" name="date" value="{{ today }}">
             Lookback Days: <input type="number" name="lookback_days" min="1" value="{{ lookback_days or 1 }}" style="width:60px;">
             <label class="switch">
+            Min Score: <input type="number" name="min_score" min="0.0" max="1.0" step="0.01" value="{{ min_score if min_score is not none else 0.01 }}" style="width:60px;">
+            <label class="switch">
             Hide junk: <input type="checkbox" name="hide_junk" {% if hide_junk is not defined or hide_junk %}checked{% endif %}>
             </label>
             <label class="switch">
@@ -114,8 +116,11 @@ def base_html_header(
                 <option value="infant" {% if mode == 'infant' %}selected{% endif %}>Infant (<7d)</option>
                 <option value="has-lc" {% if mode == 'has-lc' %}selected{% endif %}>Has GP fit</option>
                 <option value="bright" {% if mode == 'bright' %}selected{% endif %}>Bright (m<19)</option>
+                <option value="nearby" {% if mode == 'nearby' %}selected{% endif %}>Nearby (<150 Mpc)</option>
                 <option value="dwarf" {% if mode == 'dwarf' %}selected{% endif %}>Dwarf (Mr<-19) | (mr>22)</option>
                 <option value="junk" {% if mode == 'junk' %}selected{% endif %}>Junk</option>
+                <option value="blue" {% if mode == 'blue' %}selected{% endif %}>Blue (T>10^4K)</option>
+                <option value="red" {% if mode == 'red' %}selected{% endif %}>Red (T<5K)</option>
             </select>
             <button type="submit">Search by Date</button>
         </form>

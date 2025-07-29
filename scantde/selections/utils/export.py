@@ -9,6 +9,8 @@ from scantde.selections.utils.tag_junk import tag_junk
 from scantde.selections.utils.tag_dwarf import tag_dwarf
 from scantde.utils.sync import rsync_data
 from scantde.utils.cutouts import batch_create_cutouts
+from scantde.selections.utils.relabel import relabel_fields
+
 
 def export_results(df: pd.DataFrame, datestr: str, selection: str) -> pd.DataFrame:
     """
@@ -21,8 +23,7 @@ def export_results(df: pd.DataFrame, datestr: str, selection: str) -> pd.DataFra
     :return: Final DataFrame with junk tags applied
     """
 
-    dwarf = tag_dwarf(df)
-    df["is_dwarf"] = dwarf
+    df = tag_dwarf(df)
 
     # Batch download the cutouts
     batch_create_cutouts(df)
@@ -32,12 +33,14 @@ def export_results(df: pd.DataFrame, datestr: str, selection: str) -> pd.DataFra
     df["is_junk"] = junk
 
     full_df = combine_all_sources(df, save=False)
-    full_df["is_junk"] = junk
+    full_df = pd.concat([full_df, df], axis=1)
+    full_df = full_df.loc[:, ~full_df.columns.duplicated()]
+    full_df = relabel_fields(full_df)
 
     # Export the results to the database, and caches
     export_to_db(df, selection=selection)
     save_results(datestr=datestr, selection=selection, result_df=full_df)
     save_candidates(datestr=datestr, selection=selection, candidates=df)
-    rsync_data(datestr=datestr)
+    # rsync_data(datestr=datestr)
 
     return full_df
