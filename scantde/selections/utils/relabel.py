@@ -21,7 +21,10 @@ def relabel_fields(
         vals = []
         for i, x in enumerate(windows):
             key = f"thermal_{x}d_{base_key}"
-            vals.append(df.iloc[i][key])
+            try:
+                vals.append(df.iloc[i][key])
+            except KeyError:
+                vals.append(np.nan)
         new["thermal_" + base_key] = vals
 
     new_df = pd.DataFrame(new)
