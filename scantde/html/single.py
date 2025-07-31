@@ -35,7 +35,7 @@ def make_html_single(
     if classifiers is None:
         classifiers = CLASSIFIERS
 
-    night_prefix = f"{Path(prefix) / str(row["datestr"])}/"
+    night_prefix = f"{Path(prefix) / str(row['datestr'])}/"
 
     name = row["name"]
 
@@ -87,7 +87,7 @@ def make_html_single(
     name_line = (
         rf'<b>{count_line}</b> <a href="search_by_name?selection={selection}&name={name}"><b>'
         rf'<font size="3">{name}</font></b></a>'
-        rf' [junk={row["is_junk"]}] [lcscore={row['thermal_score']:.2f}]&nbsp;&nbsp;&nbsp;&nbsp;'
+        rf' [junk={row["is_junk"]}] [lcscore={row["thermal_score"]:.2f}]&nbsp;&nbsp;&nbsp;&nbsp;'
     )
 
     name_line += (
