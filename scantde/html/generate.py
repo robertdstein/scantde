@@ -129,7 +129,7 @@ def generate_html_by_date(
     try:
         if hide_junk & (mode != "junk"):
             # Remove junk candidates
-            mask = ~(df["is_junk"])
+            mask = ~(df["is_junk"].astype(bool))
 
             df, proc_log = update_source_list(
                 df, proc_log, mask, selection=selection,
@@ -147,6 +147,8 @@ def generate_html_by_date(
 
         mask = np.ones(len(df), dtype=bool)
 
+        good_fit_mask = (df["thermal_score"] > 0.5) & (df["age"] < 365.0)
+
         if mode == "infant":
             mask *= df["age"] < 7.
 
@@ -154,22 +156,22 @@ def generate_html_by_date(
             mask *= ~df["tdescore_best"].isin(["infant", "week", "month"])
 
         elif mode == "junk":
-            mask *= df["is_junk"]
+            mask *= df["is_junk"].astype(bool)
 
         elif mode == "dwarf":
-            mask *= df["is_dwarf"]
+            mask *= df["is_dwarf"].astype(bool)
 
         elif mode == "bright":
-            mask *= (df["magpsf"] < 19.0) & (df["thermal_score"] > 0.5) & (df["age"] < 365.0)
+            mask *= (df["magpsf"] < 19.0) & good_fit_mask
 
         elif mode == "nearby":
-            mask *= (df["dist_mpc"] < 150.0) & (df["thermal_score"] > 0.5) & (df["age"] < 365.0)
+            mask *= (df["dist_mpc"] < 150.0) & good_fit_mask
 
         elif mode == "blue":
-            mask *= (df["thermal_log_temp_ll"] > 4.1) & (df["thermal_score"] > 0.5) & (df["age"] < 365.0)
+            mask *= (df["thermal_log_temp_ll"] > 4.1) & good_fit_mask
 
         elif mode == "red":
-            mask *= (df["thermal_log_temp_ul"] < 3.9) & (df["thermal_score"] > 0.5) & (df["age"] < 365.0)
+            mask *= (df["thermal_log_temp_ul"] < 3.9) & good_fit_mask
 
         df, proc_log = update_source_list(
             df, proc_log, mask, selection=selection,
