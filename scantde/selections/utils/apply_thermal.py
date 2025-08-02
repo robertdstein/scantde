@@ -101,8 +101,6 @@ def apply_thermal(
         df.loc[~nan_mask, [label]] = scores
         df.loc[(~nan_mask) & mask, ["tdescore"]] = scores[mask[~nan_mask]]
         df.loc[(~nan_mask) & mask, ["tdescore_best"]] = base_name
-        # df.loc[(~nan_mask) & mask, ["tdescore_high_noise"]] = full_df[f"thermal_{window}d_high_noise"][mask]
-        # df.loc[(~nan_mask) & mask, ["tdescore_lc_score"]] = full_df[f"thermal_{window}d_score"][mask]
 
     df["age_estimate"] = full_df["age"]
 

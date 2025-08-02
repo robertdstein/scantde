@@ -15,7 +15,7 @@ def get_extinction_dict(
     :param row: Row containing 'ra' and 'dec' columns.
     :return: New dictionary with extinction corrections for each wavelength.
     """
-    new = {}
+    new = {"ztf_name": row["ztf_name"]}
     ra, dec = row["ra"], row["dec"]
     for f_name, wl in all_wavelengths.items():
         extinction = get_extinction_correction(ra, dec, [wl])
@@ -36,5 +36,5 @@ def append_extinction_to_df(
 
     ext_dicts = df.apply(get_extinction_dict, axis=1)
     ext_df = pd.DataFrame(list(ext_dicts))
-
-    return pd.concat([df, ext_df], axis=1)
+    ext_df.set_index("ztf_name", inplace=True)
+    return df.join(ext_df, on="ztf_name", how="left")

@@ -116,7 +116,6 @@ def apply_tdescore(
 
         # Export sources to SkyPortal
         export_to_skyportal(full_df[~full_df["is_junk"]])
-
         logger.info(df)
 
     except NoSourcesError:

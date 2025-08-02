@@ -12,21 +12,23 @@ def relabel_fields(
     :param df: DataFrame with source data
     :return: DataFrame with relabeled fields
     """
-    df.reset_index(inplace=True, drop=True)
-    windows = df["thermal_window"].replace({np.nan: None})
-    keys = list(x for x in df.columns if "thermal_30.0d" in x)
-    keys = [x.replace("thermal_30.0d_", "") for x in keys]
-    new = {}
-    for base_key in keys:
-        vals = []
-        for i, x in enumerate(windows):
-            key = f"thermal_{x}d_{base_key}"
-            try:
-                vals.append(df.iloc[i][key])
-            except KeyError:
-                vals.append(np.nan)
-        new["thermal_" + base_key] = vals
 
-    new_df = pd.DataFrame(new)
-    df = pd.concat([df, new_df], axis=1)
-    return df
+    all_new = []
+
+    for i, row in df.iterrows():
+
+        new = {"ztf_name": row["ztf_name"]}
+        window = row["thermal_window"]
+
+        thermal_key = f"thermal_{window}d_" if pd.notnull(window) else f"thermal_Noned_"
+
+        keys = list(x for x in df.columns if thermal_key in x)
+
+        for key in keys:
+            new[key.replace(thermal_key, "thermal_")] = row[key]
+
+        all_new.append(new)
+
+    new_df = pd.DataFrame(all_new)
+    new_df.set_index("ztf_name", inplace=True)
+    return new_df

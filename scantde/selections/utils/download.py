@@ -15,7 +15,7 @@ from tdescore.lightcurve.thermal import (
     analyse_source_thermal
 )
 
-from scantde.utils.skyportal import download_from_skyportal
+from scantde.utils.skyportal import get_skyportal_data
 
 from scantde.log import update_source_list
 
@@ -55,7 +55,7 @@ def download_data(
     )
 
     # Download skyportal data (redshift, tns_name, classifications)
-    df = download_from_skyportal(df)
+    df = get_skyportal_data(df, datestr=datestr)
 
     # Download legacy survey data (redshift - either specz or photz)
     download_legacy_survey_data(df.copy())

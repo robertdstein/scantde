@@ -85,10 +85,14 @@ def make_html_single(
     classifier_line = " | ".join(classifier_lines[::-1])
 
     name_line = (
-        rf'<b>{count_line}</b> <a href="search_by_name?selection={selection}&name={name}"><b>'
+        rf'<b>{count_line}</b><a href="search_by_name?selection={selection}&name={name}"><b>'
         rf'<font size="3">{name}</font></b></a>'
-        rf' [junk={row["is_junk"]}] [lcscore={row["thermal_score"]:.2f}]&nbsp;&nbsp;&nbsp;&nbsp;'
     )
+
+    try:
+        name_line += rf' [junk={row["is_junk"]}] [lcscore={row["thermal_score"]:.2f}]&nbsp;&nbsp;&nbsp;&nbsp;'
+    except KeyError:
+        pass
 
     name_line += (
         f"[Age: {row['age']:.0f} days] &nbsp;&nbsp;&nbsp;&nbsp; "

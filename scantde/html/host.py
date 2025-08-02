@@ -20,6 +20,6 @@ def get_host_html(
             host_line += f"distance: {row['dist_mpc'] / 1000:.3G} Gpc &nbsp;&nbsp;"
         else:
             host_line += f"distance: {row['dist_mpc']:.3G} Mpc &nbsp;&nbsp;"
-    except FileExistsError:
+    except KeyError:
         host_line = "Host: Not available"
     return host_line

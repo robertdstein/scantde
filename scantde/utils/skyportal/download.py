@@ -7,20 +7,49 @@ import logging
 from sklearn.metrics import classification_report
 from tqdm import tqdm
 import pandas as pd
+from pathlib import Path
 
 from scantde.utils.skyportal.client import SkyportalClient
 from tdescore.download.legacy_survey import default_catalog
+from scantde.paths import get_input_cache
 
 logger = logging.getLogger(__name__)
 
-def download_from_skyportal(sources: pd.DataFrame):
+SKYPORTAL_DF_COLUMNS = [
+    "ztf_name", "skyportal_redshift", "skyportal_tns_name", "skyportal_class"
+]
+
+
+def get_skyportal_path(datestr: str) -> Path:
+    """
+    Get the path to the SkyPortal file for a given date and selection
+
+    :param datestr: Date string
+    :return: Path to the SkyPortal file
+    """
+    input_cache = get_input_cache(datestr)
+    return input_cache / f"skyportal_cache.json"
+
+
+def download_from_skyportal(names: list[str], datestr: str):
     """
     Save sources to a file
 
-    :param sources: list of source names
-    :group_id: group id
+    :param names: list of source names
+    :param datestr: Date string
     :return: None
     """
+
+    skyportal_path = get_skyportal_path(datestr)
+
+    if skyportal_path.exists():
+        old = pd.read_json(
+            skyportal_path,
+            orient="records",
+            lines=True,
+        )
+    else:
+        old = pd.DataFrame(columns=SKYPORTAL_DF_COLUMNS)
 
     client = SkyportalClient()
     client.set_up_session()
@@ -29,22 +58,20 @@ def download_from_skyportal(sources: pd.DataFrame):
 
     sky_dicts = []
 
-    sources.reset_index(inplace=True, drop=True)
+    for name in tqdm(names):
 
-    for i, row in tqdm(sources.iterrows(), total=len(sources)):
-
-        new = {}
+        new = {"ztf_name": name}
 
         try:
 
             response = client.api(
                 "get",
-                endpoint=f"sources/{row['ztf_name']}",
+                endpoint=f"sources/{name}",
             )
 
             if not response.json()["status"] == "success":
                 logger.debug(
-                    f"Failed to save Source {row['ztf_name']} "
+                    f"Failed to save Source {name} "
                     f"on SkyPortal with error: {response.json()}"
                 )
 
@@ -59,7 +86,7 @@ def download_from_skyportal(sources: pd.DataFrame):
 
 
         except ConnectionError:
-            logger.info(f"Failed to load Source {row['ztf_name']} on SkyPortal")
+            logger.info(f"Failed to load Source {name} on SkyPortal")
             continue
 
         finally:
@@ -67,10 +94,46 @@ def download_from_skyportal(sources: pd.DataFrame):
 
     sky_df = pd.DataFrame(
         sky_dicts,
-        columns=["skyportal_redshift", "skyportal_tns_name", "skyportal_class"]
+        columns=SKYPORTAL_DF_COLUMNS
     )
-    for col in sky_df.columns:
-        sources[col] = sky_df[col]
 
-    # sources = pd.concat([sources.reset_index(drop=True), sky_df], axis=1)
-    return sources
+    mask = ~old["ztf_name"].isin(names)
+
+    if mask.any():
+        if len(sky_df) == 0:
+            sky_df = old[mask]
+        else:
+            sky_df = pd.concat([sky_df, old[mask]], ignore_index=True)
+
+    sky_df.to_json(
+        skyportal_path,
+        orient="records",
+        lines=True,
+    )
+
+
+def get_skyportal_data(
+    sources: pd.DataFrame,
+    datestr: str,
+) -> pd.DataFrame:
+    """
+    Get SkyPortal data for a list of sources
+
+    :param sources: DataFrame of sources
+    :param datestr: Date string
+    :return: DataFrame with SkyPortal data
+    """
+
+    skyportal_path = get_skyportal_path(datestr)
+
+    if not skyportal_path.exists():
+        download_from_skyportal(names=sources["name"], datestr=datestr)
+    else:
+        old = pd.read_json(skyportal_path, orient="records", lines=True)
+        names = [x for x in sources["ztf_name"] if x not in old["ztf_name"].tolist()]
+        download_from_skyportal(names, datestr=datestr)
+
+    sky_df = pd.read_json(skyportal_path, orient="records", lines=True)
+    sky_df.set_index("ztf_name", inplace=True)
+    join = sources.join(sky_df, on="ztf_name", how="left")
+    return join
