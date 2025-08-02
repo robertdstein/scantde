@@ -4,6 +4,7 @@ Run the TDEScore integration for a given date
 
 import argparse
 import logging
+from datetime import datetime, timedelta
 
 from scantde.utils import get_current_datestr
 
@@ -115,6 +116,9 @@ def run():
 
 
 def run_batch():
+    logging.basicConfig(level=logging.INFO)
+    logging.getLogger("scantde").setLevel(logging.INFO)
+    logging.getLogger("tdescore").setLevel(logging.INFO)
     argparser = argparse.ArgumentParser()
     argparser.add_argument(
         "-n", "--night", "--datestr",
@@ -133,15 +137,13 @@ def run_batch():
         datestr = get_current_datestr()
 
 
-    # Generate a list of nights to run, from the given date back to the lookback_nights
-    from datetime import datetime, timedelta
     start_date = datetime.strptime(datestr, "%Y%m%d")
     nights = sorted([
         (start_date - timedelta(days=i)).strftime("%Y%m%d")
         for i in range(args.lookback_nights)
     ])
 
-    print(f"Running TDEScore integration for nights: {nights}")
+    logger.info(f"Running TDEScore integration for nights: {nights}")
 
     for datestr in nights:
         logger.info(f"Running TDEScore integration for {datestr}")
