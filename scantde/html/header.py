@@ -108,6 +108,9 @@ def base_html_header(
             Hide junk: <input type="checkbox" name="hide_junk" {% if hide_junk is not defined or hide_junk %}checked{% endif %}>
             </label>
             <label class="switch">
+            |  Hide Classified: <input type="checkbox" name="hide_classified" {% if hide_classified %} checked {% endif %}>
+            </label>
+            <label class="switch">
             |  Show Cutouts: <input type="checkbox" name="show_cutout" {% if show_cutout %} checked {% endif %}>
             </label>
             |  Scanning Mode:

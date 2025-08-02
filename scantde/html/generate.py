@@ -75,6 +75,7 @@ def generate_html_by_date(
     lookback_days: int = 1,
     min_score: float = 0.01,
     hide_junk: bool = False,
+    hide_classified: bool = False,
     include_cutout: bool = False,
     mode: str = "all"
 ) -> str:
@@ -86,6 +87,7 @@ def generate_html_by_date(
     :param min_score: float minimum score to filter candidates
     :param lookback_days: int number of days to look back
     :param hide_junk: bool whether to hide old infants
+    :param hide_classified: bool whether to hide classified candidates
     :param include_cutout: bool whether to include cutout images
     :param mode: str mode of operation
     :return: HTML string
@@ -143,6 +145,14 @@ def generate_html_by_date(
             df, proc_log = update_source_list(
                 df, proc_log, mask, selection=selection,
                 stage=f"Minimum score: {min_score}", export_db=False
+            )
+
+        if hide_classified:
+            mask = pd.isnull(df["skyportal_class"])
+
+            df, proc_log = update_source_list(
+                df, proc_log, mask, selection=selection,
+                stage="Hide classified candidates", export_db=False
             )
 
         mask = np.ones(len(df), dtype=bool)
