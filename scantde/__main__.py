@@ -126,12 +126,6 @@ def run_batch():
         type=int, help="Number of nights to ", required=False,
         dest="lookback_nights", default=7
     )
-    argparser.add_argument(
-        "-s", "--skip", help="Skip the lightcurve", default=False, action="store_true"
-    )
-    argparser.add_argument(
-        "--debug", help="Run in debug mode", default=False, action="store_true"
-    )
     args = argparser.parse_args()
 
     datestr = args.night
@@ -139,9 +133,18 @@ def run_batch():
         datestr = get_current_datestr()
 
 
+    # Generate a list of nights to run, from the given date back to the lookback_nights
+    from datetime import datetime, timedelta
+    start_date = datetime.strptime(datestr, "%Y%m%d")
+    nights = sorted([
+        (start_date - timedelta(days=i)).strftime("%Y%m%d")
+        for i in range(args.lookback_nights)
+    ])
 
-    # run_night(
-    #     datestr=datestr,
-    #     skip_lightcurve=args.skip,
-    #     debug=args.debug
-    # )
+    print(f"Running TDEScore integration for nights: {nights}")
+
+    for datestr in nights:
+        logger.info(f"Running TDEScore integration for {datestr}")
+        run_night(
+            datestr=datestr,
+        )

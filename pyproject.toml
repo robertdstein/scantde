@@ -69,4 +69,5 @@ profile = "black"
 
 [project.scripts]
 scantde-run = "scantde.__main__:run"
+scantde-batch = "scantde.__main__:run_batch"
 scantde-server = "scantde.server.__main__:launch_server"
