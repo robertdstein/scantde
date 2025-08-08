@@ -69,6 +69,7 @@ def apply_thermal(
             overwrite=True,
             base_output_dir=gp_output_dir,
             thermal_windows=[window],
+            timeout_duration=120.0 # seconds per source
         )
         # Run sncosmo on the data in the thermal window
         batch_sncosmo(
