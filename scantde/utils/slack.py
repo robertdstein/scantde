@@ -17,10 +17,12 @@ def publish(
     datestr: str,
     selection: str = "tdescore",
     slack_channel: str = "ztf-scantde-o4",
-    url_ext: str = "lookback_days=1&hide_junk=on&mode=all",
+    url_ext: str = "lookback_days=1&min_score=0.01&hide_junk=on&mode=all",
 ):
 
-    base_url = f"search_by_date?selection={selection}&date={datestr}&{url_ext}"
+    alt_datestr = f"{datestr[:4]}-{datestr[4:6]}-{datestr[6:]}"
+
+    base_url = f"search_by_date?selection={selection}&date={alt_datestr}&{url_ext}"
     url = Path(PUBLIC_URL) / base_url
 
     msg = f"Today's ({datestr}) tdescore scanning link: {url}"
@@ -33,11 +35,11 @@ def publish(
             logger.info("No slack token found, skipping sending slack message")
             return
 
-        # client = WebClient(token=SLACK_TOKEN)
-        # client.chat_postMessage(
-        #     channel=slack_channel,
-        #     text=msg, username="tdescore messenger"
-        # )
+        client = WebClient(token=SLACK_TOKEN)
+        client.chat_postMessage(
+            channel=slack_channel,
+            text=msg, username="tdescore messenger"
+        )
 
 
 

@@ -19,7 +19,7 @@ def search_by_date() -> str:
     date = request.args.get('date', datetime.today().date().isoformat())
     datestr = date.replace('-', '')
     num_days = int(request.args.get('lookback_days', "1").strip())
-    min_score = float(request.args.get('min_score').strip())
+    min_score = float(request.args.get('min_score', 0.01).strip())
     hide_junk = bool(request.args.get('hide_junk'))
     hide_classified = bool(request.args.get('hide_classified', False))
     mode = request.args.get('mode', 'all')
