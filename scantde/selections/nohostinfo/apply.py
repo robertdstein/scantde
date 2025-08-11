@@ -18,6 +18,7 @@ from scantde.selections.utils.algorithmic_cuts import apply_algorithmic_cuts
 from scantde.selections.utils.download import download_data
 from scantde.selections.utils.apply_lightcurve import apply_lightcurve
 from scantde.utils.skyportal import export_to_skyportal
+from scantde.utils.slack import send_to_slack
 
 
 logger = logging.getLogger(__name__)
@@ -77,6 +78,7 @@ def apply_tdescore_nohostinfo(
 
         full_df = export_results(df, datestr=datestr, selection=NOHOST_SELECTION)
 
+
         # Export sources to SkyPortal
         export_to_skyportal(full_df[~full_df["is_junk"]])
 
@@ -85,6 +87,9 @@ def apply_tdescore_nohostinfo(
     except NoSourcesError:
         logger.warning("Terminated early due to lack of sources")
         df = pd.DataFrame()
+
+    # Send to slack
+    send_to_slack(datestr=datestr, selection=NOHOST_SELECTION)
 
     export_processing_log(proc_log, datestr=datestr, selection=NOHOST_SELECTION)
     return df

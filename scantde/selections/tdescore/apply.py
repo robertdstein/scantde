@@ -34,7 +34,7 @@ from scantde.selections.utils.export import export_results
 from scantde.selections.utils.apply_lightcurve import apply_lightcurve
 from scantde.selections.utils.apply_infant import apply_infant
 from scantde.selections.utils.apply_full import apply_full
-from scantde.utils.slack import publish
+from scantde.utils.slack import send_to_slack
 
 
 logger = logging.getLogger(__name__)
@@ -108,12 +108,6 @@ def apply_tdescore(
 
         full_df = export_results(df, datestr=datestr, selection=TDESCORE_SELECTION)
 
-        # Send to slack
-        publish(
-            datestr=datestr,
-            selection=TDESCORE_SELECTION,
-        )
-
         # Export sources to SkyPortal
         export_to_skyportal(full_df[~full_df["is_junk"]])
         logger.info(df)
@@ -121,6 +115,12 @@ def apply_tdescore(
     except NoSourcesError:
         logger.warning("Terminated early due to lack of sources")
         df = pd.DataFrame()
+
+    # Send to slack
+    send_to_slack(
+        datestr=datestr,
+        selection=TDESCORE_SELECTION,
+    )
 
     export_processing_log(proc_log, datestr=datestr, selection=TDESCORE_SELECTION)
     return df

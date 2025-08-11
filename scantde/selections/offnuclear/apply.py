@@ -17,6 +17,7 @@ from scantde.selections.utils.algorithmic_cuts import apply_algorithmic_cuts
 from scantde.selections.utils.download import download_data
 from scantde.selections.utils.apply_lightcurve import apply_lightcurve
 from scantde.utils.skyportal import export_to_skyportal
+from scantde.utils.slack import send_to_slack
 
 
 logger = logging.getLogger(__name__)
@@ -84,6 +85,13 @@ def apply_tdescore_offnuclear(
     except NoSourcesError:
         logger.warning("Terminated early due to lack of sources")
         df = pd.DataFrame()
+
+    send_to_slack(
+        selection=OFFNUCLEAR_SELECTION,
+        datestr=datestr,
+        slack_channel="ztf-scantde-offnuclear",
+        url_ext="lookback_days=1&min_score=0.00&hide_junk=on&hide_classified=on&mode=all"
+    )
 
     export_processing_log(proc_log, datestr=datestr, selection=OFFNUCLEAR_SELECTION)
     return df

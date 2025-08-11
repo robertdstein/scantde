@@ -103,7 +103,7 @@ def base_html_header(
             Search by Date: <input type="date" name="date" value="{{ today }}">
             Lookback Days: <input type="number" name="lookback_days" min="1" value="{{ lookback_days or 1 }}" style="width:60px;">
             <label class="switch">
-            Min Score: <input type="number" name="min_score" min="0.0" max="1.0" step="0.01" value="{{ min_score | default(0.01, true) }}" style="width:60px;">
+            Min Score: <input type="number" name="min_score" min="0.0" max="1.0" step="0.01" value="{{ min_score | default(0.01, false) }}" style="width:60px;">
             <label class="switch">
             Hide junk: <input type="checkbox" name="hide_junk" {% if hide_junk is not defined or hide_junk %}checked{% endif %}>
             </label>

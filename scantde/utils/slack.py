@@ -13,7 +13,7 @@ SLACK_TOKEN = os.getenv('SLACK_TOKEN')
 PUBLIC_URL = os.getenv('PUBLIC_URL', "http://127.0.0.1:5000")
 
 
-def publish(
+def send_to_slack(
     datestr: str,
     selection: str = "tdescore",
     slack_channel: str = "ztf-scantde-o4",

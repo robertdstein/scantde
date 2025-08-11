@@ -1,5 +1,6 @@
 import pandas as pd
-import numpy as np
+
+NEED_COLS = ["thermal_score"]
 
 def relabel_fields(
     df: pd.DataFrame,
@@ -31,4 +32,9 @@ def relabel_fields(
 
     new_df = pd.DataFrame(all_new)
     new_df.set_index("ztf_name", inplace=True)
+
+    for col in NEED_COLS:
+        if col not in new_df.columns:
+            new_df[col] = None
+
     return new_df
