@@ -1,5 +1,5 @@
 from flask import Blueprint, request, render_template_string
-from scantde.html.generate import generate_html_by_date
+from scantde.htmlutils.generate import generate_html_by_date
 from scantde.server.index import DEFAULT_HTML
 from scantde.server.login import login_required
 from scantde.errors import MissingCacheError

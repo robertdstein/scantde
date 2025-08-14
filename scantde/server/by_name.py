@@ -1,6 +1,6 @@
 from flask import Blueprint, request, render_template_string
 from scantde.database.search import query_by_name
-from scantde.html.generate import generate_html_by_name
+from scantde.htmlutils.generate import generate_html_by_name
 from scantde.server.index import DEFAULT_HTML
 from scantde.server.login import login_required
 

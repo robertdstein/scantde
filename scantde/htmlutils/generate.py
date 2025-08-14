@@ -6,7 +6,7 @@ from scantde.io import load_results
 from scantde.log import load_processing_log, merge_processing_logs, update_source_list, update_processing_log
 from scantde.errors import NoSourcesError
 
-from scantde.html.make_html import make_html_single, make_daily_html_table
+from scantde.htmlutils.make_html import make_html_single, make_daily_html_table
 import numpy as np
 
 import logging

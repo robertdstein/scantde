@@ -1,12 +1,12 @@
 import pandas as pd
 from pathlib import Path
 
-from scantde.html.links import make_page_links
+from scantde.htmlutils.links import make_page_links
 
 from tdescore.lightcurve.window import THERMAL_WINDOWS
-from scantde.html.cutout import generate_cutout_html
-from scantde.html.extinction import get_extinction_html
-from scantde.html.host import get_host_html
+from scantde.htmlutils.cutout import generate_cutout_html
+from scantde.htmlutils.extinction import get_extinction_html
+from scantde.htmlutils.host import get_host_html
 
 CLASSIFIERS = ["host", "infant", "week"] + [f"thermal_{x:.0f}" if x is not None else "thermal_all" for x in THERMAL_WINDOWS] + ["full"]
 

@@ -4,10 +4,10 @@ import pandas as pd
 from astropy.time import Time
 from tqdm import tqdm
 
-from scantde.html.header import base_html_header
+from scantde.htmlutils.header import base_html_header
 from tdescore.lightcurve.window import THERMAL_WINDOWS
 from typing import Optional
-from scantde.html.single import make_html_single
+from scantde.htmlutils.single import make_html_single
 from scantde.log import ProcStage
 
 
