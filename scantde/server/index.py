@@ -16,3 +16,13 @@ def index():
         DEFAULT_HTML,
         today=datetime.now().strftime('%Y-%m-%d')
     )
+
+from flask import request, session
+
+@index_bp.route("/ping")
+def ping():
+    return "pong"
+
+@index_bp.route("/whoami")
+def whoami():
+    return f"path={request.path}, logged_in={session.get('logged_in')}"
