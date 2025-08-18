@@ -10,7 +10,7 @@ index_bp = Blueprint('index', __name__)
 DEFAULT_HTML = base_html_header(pd.DataFrame())
 
 @index_bp.route('/', methods=['GET', 'POST'])
-@login_required
+# @login_required
 def index():
     return render_template_string(
         DEFAULT_HTML,
