@@ -18,6 +18,11 @@ def create_app():
     password = os.getenv("SCANTDE_PASSWORD")
     secret_key = os.getenv("SCANTDE_SECRET_KEY")
 
+    if secret_key is None:
+        raise KeyError("SCANTDE_SECRET_KEY environment variable is not set")
+
+    app.secret_key = secret_key
+
     if (password is None) or (secret_key is None):
 
         @app.route('/login', methods=['GET', 'POST'])
@@ -25,10 +30,7 @@ def create_app():
             session['logged_in'] = True
             return redirect(url_for('index.index'))
 
-        app.secret_key = secrets.token_urlsafe(32)
-
     else:
-        app.secret_key = secret_key
 
         login_form = '''
         <form method="post">
