@@ -9,7 +9,7 @@ import requests
 from tqdm import tqdm
 
 import io
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 
 import logging
 
@@ -105,7 +105,10 @@ def create_ls_cutout(
         plt.savefig(cutout_path, bbox_inches="tight")
         plt.close()
     except HTTPError:
-        logger.info(f"{source['name']}: HTTPConnection error in PS1 cutouts")
+        logger.info(f"{source['name']}: HTTPConnection error in LS cutouts")
+    except UnidentifiedImageError:
+        logger.warning(f"{source['name']}: UnidentifiedImageError in LS cutouts")
+        cutout_path.unlink()
 
 
 def create_cutout(
