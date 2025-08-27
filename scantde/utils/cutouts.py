@@ -108,7 +108,7 @@ def create_ls_cutout(
         logger.info(f"{source['name']}: HTTPConnection error in LS cutouts")
     except UnidentifiedImageError:
         logger.warning(f"{source['name']}: UnidentifiedImageError in LS cutouts")
-        cutout_path.unlink()
+        cutout_path.unlink(missing_ok=True)
 
 
 def create_cutout(
