@@ -75,5 +75,5 @@ logging.info(f"key: {os.getenv('SCANTDE_SECRET_KEY')}")
 # --- Load the Flask app ---
 from scantde.server import create_app
 application = create_app()
+application.config["APPLICATION_ROOT"] = "/scantde"
 
-logging.info(f"key: {application.secret_key}")
