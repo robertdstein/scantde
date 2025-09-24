@@ -52,10 +52,10 @@ def create_app():
             return render_template_string(login_form, error=error)
 
     from .index import index_bp
-    app.register_blueprint(index_bp, url_prefix='/scantde')
+    app.register_blueprint(index_bp)
     from .by_name import name_bp
-    app.register_blueprint(name_bp, url_prefix='/scantde')
+    app.register_blueprint(name_bp)
     from .by_date import date_bp
-    app.register_blueprint(date_bp, url_prefix='/scantde')
+    app.register_blueprint(date_bp)
 
     return app

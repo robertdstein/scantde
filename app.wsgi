@@ -76,6 +76,9 @@ logging.info(f"app.url_map")
 
 # --- Load the Flask app ---
 from scantde.server import create_app
-application = create_app()
-application.config["APPLICATION_ROOT"] = "/scantde"
+from flask import Flask
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
+application = DispatcherMiddleware(Flask("dummy"), {
+    "/scantde": create_app()
+})
