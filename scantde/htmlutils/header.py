@@ -105,7 +105,7 @@ def base_html_header(
       <br>
     
       <!-- Search by Date -->
-      <form method="get" action="{{ url_for('search_by_date') }}">
+      <form method="get" action="{{ url_for('date.search_by_date') }}">
           <input type="hidden" name="selection" id="selectionByDate">
           Search by Date: <input type="date" name="date" value="{{ today }}">
           Lookback Days: <input type="number" name="lookback_days" min="1" value="{{ lookback_days or 1 }}" style="width:60px;">

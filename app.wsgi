@@ -53,7 +53,7 @@ sys.path[:] = [p for p in sys.path if not (p in seen or seen.add(p))]
 logging.info("sys.path: %s", sys.path)
 
 # --- Logging for Apache error log ---
-#logging.basicConfig(stream=sys.stderr, level=logging.INFO)
+logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 logging.info("Python executable: %s", sys.executable)
 logging.info("Python version: %s", sys.version)
 logging.info("sys.prefix: %s", sys.prefix)
@@ -71,6 +71,8 @@ from dotenv import load_dotenv, find_dotenv
 load_dotenv("/n/ursa/www/starshredder/scantde/.env")
 
 logging.info(f"key: {os.getenv('SCANTDE_SECRET_KEY')}")
+
+logging.info(f"app.url_map")
 
 # --- Load the Flask app ---
 from scantde.server import create_app
