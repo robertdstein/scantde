@@ -72,13 +72,14 @@ load_dotenv("/n/ursa/www/starshredder/scantde/.env")
 
 logging.info(f"key: {os.getenv('SCANTDE_SECRET_KEY')}")
 
-logging.info(f"app.url_map")
-
 # --- Load the Flask app ---
 from scantde.server import create_app
 from flask import Flask
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
+app = create_app()
+logging.info(f"app.url_map")
+
 application = DispatcherMiddleware(Flask("dummy"), {
-    "/scantde": create_app()
+    "/scantde": app
 })
