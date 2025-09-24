@@ -78,7 +78,7 @@ from flask import Flask
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
 app = create_app()
-logging.info(f"app.url_map")
+logging.info(f"{app.url_map}")
 
 application = DispatcherMiddleware(Flask("dummy"), {
     "/scantde": app
