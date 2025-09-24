@@ -6,7 +6,7 @@ from scantde.server.login import login_required
 
 from datetime import datetime
 
-name_bp = Blueprint('name', __name__)
+name_bp = Blueprint('name', __name__, url_prefix="/scantde")
 
 @name_bp.route('/search_by_name', methods=['GET'])
 @login_required
