@@ -1,7 +1,7 @@
 from flask import Blueprint, request, render_template_string
 from scantde.htmlutils.generate import generate_html_by_date
 from scantde.server.index import DEFAULT_HTML
-from scantde.server.login import login_required
+# from scantde.server.login import login_required
 from scantde.errors import MissingCacheError
 
 from datetime import datetime
@@ -9,7 +9,7 @@ from datetime import datetime
 date_bp = Blueprint('date', __name__)
 
 @date_bp.route('/search_by_date', methods=['GET'])
-@login_required
+# @login_required
 def search_by_date() -> str:
     """
     Search for candidates by date and generate HTML output.

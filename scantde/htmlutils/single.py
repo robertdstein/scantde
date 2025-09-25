@@ -58,9 +58,11 @@ def make_html_single(
         sub_dir = "thermal_None"
 
     shap_ext = f"{night_prefix}{selection}/shap/{sub_dir}/{name}.png"
-    # shap_path = base_output_dir / shap_ext
-
-    shap_line = f'<img src="{shap_ext}" height="220">'
+    shap_path = base_output_dir / shap_ext
+    if shap_path.exists():
+        shap_line = f'<img src="{shap_ext}" height="220">'
+    else:
+        shap_line = ""
 
     # Get the line with classifier scores
     classifier_lines = []
