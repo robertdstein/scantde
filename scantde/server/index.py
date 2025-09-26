@@ -1,7 +1,7 @@
 import pandas as pd
 from flask import Blueprint, render_template_string
 from scantde.htmlutils.header import base_html_header
-from scantde.server.login import login_required
+# from scantde.server.login import login_required
 
 from datetime import datetime
 
