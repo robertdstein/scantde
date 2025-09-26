@@ -80,4 +80,7 @@ from werkzeug.middleware.dispatcher import DispatcherMiddleware
 app = create_app()
 logging.info(f"{app.url_map}")
 
-application = app
+application = DispatcherMiddleware(
+    Flask("dummy_root"),
+    {"/scantde": app}
+)
