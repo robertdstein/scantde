@@ -23,6 +23,8 @@ def create_app():
 
     app.secret_key = secret_key
 
+    url_ext = os.getenv("SERVER_EXT")
+
     # if (password is None) or (secret_key is None):
     #
     #     @app.route('/login', methods=['GET', 'POST'])
@@ -52,10 +54,10 @@ def create_app():
     #         return render_template_string(login_form, error=error)
 
     from .index import index_bp
-    app.register_blueprint(index_bp)
+    app.register_blueprint(index_bp, url_prefix=url_ext)
     from .by_name import name_bp
-    app.register_blueprint(name_bp)
+    app.register_blueprint(name_bp, url_prefix=url_ext)
     from .by_date import date_bp
-    app.register_blueprint(date_bp)
+    app.register_blueprint(date_bp, url_prefix=url_ext)
 
     return app

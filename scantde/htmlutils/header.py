@@ -96,7 +96,7 @@ def base_html_header(
       <br><br>
     
       <!-- Search by Name -->
-      <form id="searchByNameForm" method="get" action="/scantde/search_by_name">
+      <form id="searchByNameForm" method="get" action="{{ url_for('name.search_by_name') }}">
           <input type="hidden" name="selection" id="selectionByName">
           Load Source Page: 
           <input id="nameInput" name="name" value="{{ name or '' }}" style="width:200px;">

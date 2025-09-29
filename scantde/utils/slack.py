@@ -10,7 +10,9 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 SLACK_TOKEN = os.getenv('SLACK_TOKEN')
-PUBLIC_URL = os.getenv('PUBLIC_URL', "http://127.0.0.1:5000")
+BASE_URL = os.getenv('BASE_PUBLIC_URL', "http://127.0.0.1:5000")
+EXT = os.getenv("SERVER_EXT", None)
+PUBLIC_URL = f"{os.path.join(BASE_URL, EXT)}" if EXT else BASE_URL
 
 
 def send_to_slack(
