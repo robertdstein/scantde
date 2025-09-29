@@ -77,10 +77,4 @@ from scantde.server import create_app
 from flask import Flask
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
-app = create_app()
-logging.info(f"{app.url_map}")
-
-application = DispatcherMiddleware(
-    Flask("dummy_root"),
-    {"/scantde": app}
-)
+application = create_app()
