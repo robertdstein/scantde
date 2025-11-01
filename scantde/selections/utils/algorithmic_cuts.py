@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 MAX_DIST_ARCSEC = 0.9  # Max distance from nucleus in arcsec for nuclear candidates
 
 CROSSMATCH_RADIUS = 3.0  # Distance in arcsec for PS1 crossmatch candidates
-MAX_SGSCORE = 0.5 # Maximum sgscore1 value for stellar candidates
+MAX_SGSCORE = 0.51 # Maximum sgscore1 value for stellar candidates
 
 def apply_algorithmic_cuts(
     df: pd.DataFrame,
@@ -47,6 +47,7 @@ def apply_algorithmic_cuts(
     :param selection: selection name
     :param proc_log: processing log to update
     :param require_nuclear: whether to require nuclear candidates
+    :param require_multidet: whether to require multiple detections
     :param cut_wise: whether to apply WISE cuts
     :return: DataFrame with algorithmic cuts applied
     """
@@ -160,7 +161,8 @@ def apply_algorithmic_cuts(
     full_df = combine_all_sources(df.copy(), save=False)
 
     # Remove sources with gaia parallax > 3 sigma, or with a milliquas match
-    mask = (full_df["gaia_aplx"] < 3.0) & ~full_df["has_milliquas"]
+    mask = (full_df["gaia_aplx"] < 5.0) & ~full_df["has_milliquas"]
+
     df, proc_log = update_source_list(
         df, proc_log, mask, selection=selection,
         stage="Algorithmic crossmatch cuts - fast"
@@ -176,6 +178,7 @@ def apply_algorithmic_cuts(
     if cut_wise and "catwise_w1_m_w2" in full_df.columns:
         # Remove sources with WISE data that is AGN-ish
         mask = (full_df["catwise_w1_m_w2"] > 0.7)
+
         df, proc_log = update_source_list(
             df, proc_log, ~mask, selection=selection,
             stage="CatWISE cuts"
