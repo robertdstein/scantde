@@ -22,7 +22,10 @@ def tag_dwarf(df) -> pd.DataFrame:
     mask = pd.isnull(redshift) | (redshift < 0)
 
     if mask.any():
-        redshift[mask] = full_df[f"{default_catalog}_z_phot_median"][mask].copy()
+        try:
+            redshift[mask] = full_df[f"{default_catalog}_z_phot_median"][mask].copy()
+        except KeyError:
+            pass
 
     mask = pd.isnull(redshift) | (redshift < 0)
 
