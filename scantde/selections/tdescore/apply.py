@@ -60,11 +60,10 @@ def apply_tdescore(
 
     proc_log = []
 
-    if len(df) == 0:
-        logger.warning("Source table is empty, generating empty HTML table")
-        return pd.DataFrame()
-
     try:
+        if len(df) == 0:
+            raise NoSourcesError("Source table is empty")
+
         df, full_df, proc_log = apply_algorithmic_cuts(
             df, selection=TDESCORE_SELECTION, proc_log=proc_log,
             require_nuclear=True, require_multidet=False
@@ -99,7 +98,8 @@ def apply_tdescore(
         )
 
         df, proc_log = apply_infant(
-            df, selection=TDESCORE_SELECTION, base_output_dir=base_output_dir, proc_log=proc_log,
+            df, selection=TDESCORE_SELECTION, base_output_dir=base_output_dir,
+            proc_log=proc_log,
         )
 
         df = apply_thermal(

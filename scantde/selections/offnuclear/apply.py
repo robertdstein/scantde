@@ -42,11 +42,10 @@ def apply_tdescore_offnuclear(
 
     logger.info(f"Running selection {OFFNUCLEAR_SELECTION} for {datestr}")
 
-    if len(df) == 0:
-        logger.warning("Source table is empty, generating empty HTML table")
-        return pd.DataFrame()
-
     try:
+        if len(df) == 0:
+            logger.warning("Source table is empty")
+            raise NoSourcesError("No sources to process")
 
         df, _, proc_log = apply_algorithmic_cuts(
             df, selection=OFFNUCLEAR_SELECTION, proc_log=proc_log,

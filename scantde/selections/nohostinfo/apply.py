@@ -43,11 +43,11 @@ def apply_tdescore_nohostinfo(
 
     logger.info(f"Running selection {NOHOST_SELECTION} for {datestr}")
 
-    if len(df) == 0:
-        logger.warning("Source table is empty, generating empty HTML table")
-        return pd.DataFrame()
-
     try:
+
+        if len(df) == 0:
+            logger.warning("Source table is empty")
+            raise NoSourcesError("No sources to process")
 
         df, _, proc_log = apply_algorithmic_cuts(
             df, selection=NOHOST_SELECTION, proc_log=proc_log,
@@ -90,7 +90,6 @@ def apply_tdescore_nohostinfo(
 
     # Send to slack
     send_to_slack(datestr=datestr, selection=NOHOST_SELECTION)
-
     export_processing_log(proc_log, datestr=datestr, selection=NOHOST_SELECTION)
     return df
 
