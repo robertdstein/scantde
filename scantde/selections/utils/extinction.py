@@ -1,7 +1,7 @@
 import pandas as pd
-from tdescore.lightcurve.extinction import get_extinction_correction, ztf_wavelengths, extra_wavelengths
+from tdescore.lightcurve.extinction import get_extinction_correction, wavelengths, extra_wavelengths
 
-all_wavelengths = ztf_wavelengths.copy()
+all_wavelengths = wavelengths.copy()
 all_wavelengths.update(extra_wavelengths)
 
 ext_keys = [f"ext_{name}" for name in all_wavelengths.keys()]
