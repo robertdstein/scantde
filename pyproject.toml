@@ -1,0 +1,73 @@
+[build-system]
+requires = ["setuptools>=45", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scantde"
+version = "1.0.0"
+description = ""
+authors = [
+    {name = "Robert Stein", email = "rdstein@umd.edu"},
+    {name = "Yuhan Yao", email = "yuhanyao@berkeley.edu"},
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Intended Audience :: Science/Research',
+    'Intended Audience :: End Users/Desktop',
+    'Intended Audience :: Developers',
+    'Natural Language :: English',
+    'Topic :: Scientific/Engineering',
+    'Topic :: Scientific/Engineering :: Astronomy',
+    'Topic :: Scientific/Engineering :: Physics',
+    'Operating System :: POSIX',
+    'Operating System :: Unix',
+    'Operating System :: MacOS',
+]
+dependencies = [
+    "astro-datalab",
+    "astropy",
+    "mastcasjobs",
+    "numpy",
+    "pandas",
+    "penquins",
+    "photutils",
+    "pytz",
+    "sfdmap@git+https://github.com/robertdstein/sfdmap",
+    "tdescore@git+https://github.com/robertdstein/tdescore@v1.1.0",
+    "xgboost>=2.1.0",
+    "tqdm",
+    "ztfquery",
+    "seaborn",
+    "slack_sdk",
+    "sqlmodel",
+    "python-dotenv",
+    "flask",
+    "Flask-SQLAlchemy",
+    "pydantic",
+    "ztfquery",
+    "gunicorn"
+]
+[project.optional-dependencies]
+dev = [
+    "black",
+    "isort",
+]
+
+[project.urls]
+Homepage = "https://github.com/robertdstein/scantde"
+
+[tool.setuptools]
+packages = ["scantde"]
+
+[tool.isort]
+profile = "black"
+
+[project.scripts]
+scantde-run = "scantde.__main__:run"
+scantde-batch = "scantde.__main__:run_batch"
+scantde-server = "scantde.server.__main__:launch_server"
