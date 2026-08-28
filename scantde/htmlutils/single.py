@@ -41,6 +41,7 @@ def make_html_single(
 
     lightcurve_ext = f"{night_prefix}lightcurves/{name}.png"
     lightcurve_path = base_output_dir / lightcurve_ext
+
     if lightcurve_path.exists():
         lightcurve_line = f'<img src="{lightcurve_ext}" height="240">'
     else:

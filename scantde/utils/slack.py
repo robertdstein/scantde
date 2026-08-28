@@ -15,6 +15,26 @@ EXT = os.getenv("SERVER_EXT", None)
 PUBLIC_URL = f"{os.path.join(BASE_URL, EXT)}" if EXT else BASE_URL
 
 
+def send_slack_message(message: str, slack_channel: str = "ztf-scantde-o4"):
+    """
+    Send a message to a Slack channel.
+
+    :param message: Message to send
+    :param slack_channel: Slack channel to send the message to
+    :return: None
+    """
+    if SLACK_TOKEN is None:
+        logger.warning("No slack token found, skipping sending slack message")
+        return
+
+    client = WebClient(token=SLACK_TOKEN)
+    client.chat_postMessage(
+        channel=slack_channel,
+        text=message,
+        username="tdescore messenger"
+    )
+
+
 def send_to_slack(
     datestr: str,
     selection: str = "tdescore",
@@ -27,21 +47,13 @@ def send_to_slack(
     base_url = f"search_by_date?selection={selection}&date={alt_datestr}&{url_ext}"
     url = Path(PUBLIC_URL) / base_url
 
-    msg = f"Today's ({datestr}) tdescore scanning link: {url}"
+    msg = f"Today's ({datestr}) tdescore scanning link: <{url}| here>"
     logger.info(msg)
 
     if datestr != get_current_datestr():
         logger.info(f"Skipping publishing for {datestr}, not today's date")
     else:
-        if SLACK_TOKEN is None:
-            logger.info("No slack token found, skipping sending slack message")
-            return
-
-        client = WebClient(token=SLACK_TOKEN)
-        client.chat_postMessage(
-            channel=slack_channel,
-            text=msg, username="tdescore messenger"
-        )
+        send_slack_message(msg, slack_channel)
 
 
 

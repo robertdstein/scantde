@@ -80,7 +80,7 @@ class SkyportalClient:
 
         retries = Retry(
             total=5,
-            backoff_factor=2,
+            backoff_factor=0.1,
             status_forcelist=[405, 429, 500, 502, 503, 504],
             allowed_methods=["HEAD", "GET", "PUT", "POST", "PATCH"],
         )

@@ -77,7 +77,7 @@ def apply_tdescore_offnuclear(
         full_df = export_results(df, datestr=datestr, selection=OFFNUCLEAR_SELECTION)
 
         # Export sources to SkyPortal
-        export_to_skyportal(full_df[~full_df["is_junk"]], group_id=1860)
+        export_to_skyportal(full_df[~full_df["is_junk"]], group_ids=[1860])
 
         logger.info(df)
 
