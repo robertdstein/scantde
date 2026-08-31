@@ -9,7 +9,7 @@ from scantde.utils import send_slack_message
 from scantde.followup.cuts import apply_base_spec_cuts
 from scantde.followup.slack import send_table_to_slack
 
-def get_summary(
+def get_candidate_summary(
         datestr: str, lookback_days: int = 7, slack_channel="tdescore-followup"
 ):
     """
@@ -71,7 +71,7 @@ def main(argv=None):
     if args.lookback_days < 1:
         parser.error("--lookback-days must be at least 1")
 
-    get_summary(args.datestr, args.lookback_days, args.slack_channel)
+    get_candidate_summary(args.datestr, args.lookback_days, args.slack_channel)
 
 
 if __name__ == "__main__":

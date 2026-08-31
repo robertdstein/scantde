@@ -113,7 +113,11 @@ def sedm_assignment(datestr: str, slack_channel: str, lookback_days: int = 1):
     )
     df = get_sedm_list(df)
     if len(df) == 0:
-        return "No valid SEDm-able targets"
+        send_slack_message(
+            f"No valid SEDm-able targets for {datestr} ",
+            slack_channel=slack_channel
+        )
+        return
 
     spec_check = (df["has_sedm_spec?"] | df["has_spec?"]) & ~(df["pending_sedm?"])
     mask = ~(spec_check | df["pending_sedm?"])

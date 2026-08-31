@@ -131,7 +131,7 @@ def export_to_skyportal(sources: pd.DataFrame, group_ids: list[int] | None = Non
                         "patch",
                         endpoint=f"sources/{row['ztf_name']}",
                         data={
-                            "redshift": specz,
+                            "redshift": float(f"{specz:.2f}"),
                             "redshift_origin": row["zorigin"],
                         },
                     )

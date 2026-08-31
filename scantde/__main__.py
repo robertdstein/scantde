@@ -14,16 +14,20 @@ from scantde.selections.tdescore.apply import apply_tdescore
 from scantde.selections.nohostinfo.apply import apply_tdescore_nohostinfo
 from scantde.selections.offnuclear.apply import apply_tdescore_offnuclear
 from scantde.paths import base_html_dir
+from scantde.followup import sedm_assignment, get_candidate_summary
 
 logger = logging.getLogger(__name__)
+
+FOLLOWUP_SLACK_CHANNEL = "tdescore-dev"
 
 
 def run_night(datestr: str | None, skip_lightcurve: bool = False, debug: bool = False):
     """
     Run the TDEScore integration for a single date
     """
+    today = get_current_datestr()
     if datestr is None:
-        datestr = get_current_datestr()
+        datestr: str = today
 
     if (not debug) & (not skip_lightcurve):
         # Remove the nightly file to force a re-download
@@ -82,6 +86,10 @@ def run_night(datestr: str | None, skip_lightcurve: bool = False, debug: bool = 
 
     # Apply tdescore (offnuclear)
     apply_tdescore_offnuclear(df.copy(), base_output_dir=nightly_output_dir)
+
+    if datestr == today:
+        get_candidate_summary(datestr, slack_channel=FOLLOWUP_SLACK_CHANNEL, lookback_days=7)
+        sedm_assignment(datestr, slack_channel=FOLLOWUP_SLACK_CHANNEL, lookback_days=1)
 
 
 def run():

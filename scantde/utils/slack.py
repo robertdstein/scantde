@@ -2,7 +2,6 @@ import logging
 from slack_sdk import WebClient
 from dotenv import load_dotenv
 import os
-from pathlib import Path
 from scantde.utils import get_current_datestr
 
 load_dotenv()
@@ -10,7 +9,7 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 SLACK_TOKEN = os.getenv('SLACK_TOKEN')
-BASE_URL = os.getenv('BASE_PUBLIC_URL', "http://127.0.0.1:5000")
+BASE_URL = os.getenv('BASE_PUBLIC_URL', "https://127.0.0.1:5000")
 EXT = os.getenv("SERVER_EXT", None)
 PUBLIC_URL = f"{os.path.join(BASE_URL, EXT)}" if EXT else BASE_URL
 
@@ -45,9 +44,9 @@ def send_to_slack(
     alt_datestr = f"{datestr[:4]}-{datestr[4:6]}-{datestr[6:]}"
 
     base_url = f"search_by_date?selection={selection}&date={alt_datestr}&{url_ext}"
-    url = Path(PUBLIC_URL) / base_url
+    url = f"{PUBLIC_URL.rstrip('/')}/{base_url}"
 
-    msg = f"Today's ({datestr}) tdescore scanning link: <{url}| here>"
+    msg = f"Today's ({datestr}) tdescore scanning link: {url}"
     logger.info(msg)
 
     if datestr != get_current_datestr():
