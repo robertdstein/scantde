@@ -89,7 +89,7 @@ def apply_tdescore_offnuclear(
         selection=OFFNUCLEAR_SELECTION,
         datestr=datestr,
         slack_channel="ztf-scantde-offnuclear",
-        url_ext="lookback_days=1&min_score=0.00&hide_junk=on&hide_classified=on&mode=all"
+        url_ext="lookback_days=1&min_score=0.01&hide_junk=on&hide_classified=on&mode=all"
     )
 
     export_processing_log(proc_log, datestr=datestr, selection=OFFNUCLEAR_SELECTION)
