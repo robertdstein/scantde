@@ -31,18 +31,31 @@ def get_candidate_summary(
     df = batch_check_spec(df)
     df.sort_values(by="peak_mag", inplace=True)
 
+    if df.empty:
+        send_slack_message(
+            f"No unclassified candidates found as of {datestr}, "
+            f"with a lookback time of {lookback_days} days.",
+            slack_channel=slack_channel
+        )
+        return
+
     mask = df["fading?"]
 
     send_slack_message(
         f"A summary of unclassified candidates as of {datestr}, "
-        f"with a lookback time of {lookback_days} days \n \n Rising:",
+        f"with a lookback time of {lookback_days} days \n \n",
         slack_channel=slack_channel
     )
-    send_table_to_slack(df[~mask], slack_channel=slack_channel)
-    send_slack_message(
-        f"Fading:", slack_channel=slack_channel
-    )
-    send_table_to_slack(df[mask], slack_channel=slack_channel)
+    if not mask.all():
+        send_slack_message(
+            f"Rising:", slack_channel=slack_channel
+        )
+        send_table_to_slack(df[~mask], slack_channel=slack_channel)
+    if mask.sum() > 0:
+        send_slack_message(
+            f"Fading:", slack_channel=slack_channel
+        )
+        send_table_to_slack(df[mask], slack_channel=slack_channel)
 
 
 def main(argv=None):
