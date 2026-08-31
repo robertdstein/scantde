@@ -7,7 +7,6 @@ from scantde.selections.utils.crossmatch import download_crossmatch_fast
 
 from scantde.log.model import ProcStage
 
-
 from tdescore.combine.parse import combine_all_sources
 from tdescore.download.all import (
     download_all,
@@ -18,7 +17,9 @@ from tdescore.download.all import (
     download_sdss_data,
     download_tns_data,
     download_wise_data,
+    download_boom
 )
+from tdescore.combine.boom.all import parse_all_sources_boom
 
 import numpy as np
 
@@ -54,9 +55,27 @@ def apply_algorithmic_cuts(
 
     logger.info(
         f"Starting with {len(df)} sources, including {sum(df['is_tde'])} TDE alerts")
-    logger.info(f"These TDEs are: {set(df[df['is_tde']]['ztf_name'].to_list())}")
+    logger.info(f"These TDEs are: {set(df[df['is_tde']]['name'].to_list())}")
 
     proc_log = update_processing_log(proc_log, "Initial", df)
+
+    # Deduplicate
+    logger.info("Deduplicating sources")
+
+    new = []
+
+    for name in tqdm(set(df["name"])):
+        mask = df["name"] == name
+        df_cut = df[mask].sort_values(by="jd")
+        new.append(df_cut.iloc[0])
+
+    df = pd.DataFrame(new)
+    df = df.sort_values(by=["is_tde", "name"], ascending=[False, False])
+    df.reset_index(drop=True, inplace=True)
+
+    logger.info(f"Have {len(df)} unique sources, including {sum(df['is_tde'])} TDEs")
+
+    proc_log = update_processing_log(proc_log, "De-duplicated", df)
 
     # Remove stars
     mask = (df["sgscore1"] < MAX_SGSCORE) | (df["sgscore1"] == -999.0) | (
@@ -69,35 +88,6 @@ def apply_algorithmic_cuts(
     )
     if len(df) == 0:
         raise NoSourcesError("No sources left after cut")
-
-    if require_multidet:
-        # Remove sources with 1 detection
-        mask = df["ndethist"] > 1
-        df, proc_log = update_source_list(
-            df, proc_log, mask, selection=selection,
-            stage="ndethist > 1", export_db=False
-        )
-
-        if len(df) == 0:
-            raise NoSourcesError("No sources left after ndethist cut")
-
-    # Deduplicate
-    logger.info("Deduplicating sources")
-
-    new = []
-
-    for name in tqdm(set(df["ztf_name"])):
-        mask = df["ztf_name"] == name
-        df_cut = df[mask].sort_values(by="jd")
-        new.append(df_cut.iloc[0])
-
-    df = pd.DataFrame(new)
-    df = df.sort_values(by=["is_tde", "ztf_name"], ascending=[False, False])
-    df.reset_index(drop=True, inplace=True)
-
-    logger.info(f"Have {len(df)} unique sources, including {sum(df['is_tde'])} TDEs")
-
-    proc_log = update_processing_log(proc_log, "De-duplicated", df)
 
     # Remove galactic sources
     c = SkyCoord(ra=df["ra"].values, dec=df["dec"].values, unit="deg")
@@ -127,22 +117,7 @@ def apply_algorithmic_cuts(
 
         logger.info(f"Applying nuclear distance cut, leaving {len(df)} sources")
 
-    mask = np.ones(len(df), dtype=bool)
-
-    # Remove really bright hosts (stellar)
-    for column in ["sgmag1", "srmag1", "simag1", "szmag1"]:
-        mask &= (df[column] > 12.) | (df[column] == -999.)
-
-    df, proc_log = update_source_list(
-        df, proc_log, mask, selection=selection,
-        stage="Algorithmic cuts - bright host (stellar)"
-    )
-
-    logger.info(
-        f"Applying bright host (stellar) cut, leaving {len(df)} sources"
-    )
-
-    # Remove bright hosts (galactic)
+    # Remove bright hosts (gaia)
     mask = (df["neargaiabright"] > 5.) | (df["neargaiabright"] < -0.0)
 
     df, proc_log = update_source_list(
@@ -155,34 +130,54 @@ def apply_algorithmic_cuts(
     )
 
     # Download fast crossmatch data (no WISE)
-    logger.info("Downloading fast crossmatch data")
-    download_crossmatch_fast(df.copy())
-    logger.info("Combining fast crossmatch sources")
-    full_df = combine_all_sources(df.copy(), save=False)
+    logger.info("Downloading alert data")
+    download_boom(df.copy())
 
-    # Remove sources with gaia parallax > 3 sigma, or with a milliquas match
-    mask = (full_df["gaia_aplx"] < 5.0) & ~full_df["has_milliquas"]
+    logger.info("Combining fast crossmatch sources")
+    full_df = parse_all_sources_boom(df.copy())
+
+    # VSX distance cut
+    vsx_mask = ~(full_df["VSX_distance_arcsec"] < 1.0)
+
+    # Gaia cuts
+    gaia_mask = ~((full_df["gaia_distance_arcsec"] < 1.0) & (
+        (full_df["gaia_aplx"] > 5.0)
+        | (full_df["gaia_apmra"] > 5.0)
+        | (full_df["gaia_apmdec"] > 5.0)
+    ))
+
+    # Milliquas cuts
+    milliquas_mask = ~full_df["has_milliquas"]
+
+    # WISE cuts
+    if cut_wise:
+        wise_mask = ~(
+                (full_df["catwise_w1_m_w2"] > 0.7)
+                & (full_df["catwise_distance_arcsec"] < 2.0)
+                & (full_df["distpsnr1"] < 0.5)
+        )
+    else:
+        wise_mask = np.ones(len(full_df), dtype=bool)
+
+    # Combine all masks
+    mask = vsx_mask & gaia_mask & milliquas_mask & wise_mask
 
     df, proc_log = update_source_list(
         df, proc_log, mask, selection=selection,
-        stage="Algorithmic crossmatch cuts - fast"
+        stage="Algorithmic Cuts"
     )
 
-    # Apply cuts which includes WISE data
-    logger.info("Downloading WISE data")
-    download_all(df.copy(), include_optional=False)
-
-    logger.info("Combining all crossmatch data")
-    full_df = combine_all_sources(df.copy(), save=False)
-
-    if cut_wise and "catwise_w1_m_w2" in full_df.columns:
-        # Remove sources with WISE data that is AGN-ish
-        mask = (full_df["catwise_w1_m_w2"] > 0.7)
+    if require_multidet:
+        full_df = parse_all_sources_boom(df.copy())
+        # Remove sources with 1 detection
+        mask = (full_df["ndethist"] > 3) & (full_df["ndetfilters"] > 1)
 
         df, proc_log = update_source_list(
-            df, proc_log, ~mask, selection=selection,
-            stage="CatWISE cuts"
+            df, proc_log, mask, selection=selection,
+            stage="ndethist > 3 & ndetfilters > 1", export_db=False
         )
-        full_df = combine_all_sources(df.copy(), save=False)
+
+        if len(df) == 0:
+            raise NoSourcesError("No sources left after ndethist cut")
     
     return df, full_df, proc_log

@@ -116,10 +116,14 @@ def apply_classifier(
         train_array = convert_to_train_dataset(train_data, columns=relevant_columns)
         train_nan_mask = np.array([np.sum(pd.isnull(x)) > 0 for x in train_array])
         train_array = train_array[~train_nan_mask].astype(float)
-        explainer = shap.Explainer(clf, train_array, feature_names=relevant_columns)
+        explainer = shap.TreeExplainer(
+            clf, train_array, feature_names=relevant_columns
+        )
 
         # Apply explainer to the new data
-        shap_values = explainer(data_to_use)
+        shap_values = explainer(
+            data_to_use, check_additivity=False
+        )
 
         for i, shap_value in enumerate(shap_values):
 

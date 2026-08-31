@@ -57,4 +57,4 @@ def update_source_list(
     if len(df) == 0:
         raise NoSourcesError("No sources left after cut")
 
-    return df[mask], proc_log
+    return df[mask].reset_index(drop=True), proc_log

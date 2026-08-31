@@ -58,7 +58,7 @@ def download_data(
     df = get_skyportal_data(df, datestr=datestr)
 
     # Download legacy survey data (redshift - either specz or photz)
-    download_legacy_survey_data(df.copy())
+    # download_legacy_survey_data(df.copy())
 
     # Add extinction information to the DataFrame
     df = append_extinction_to_df(df.copy())

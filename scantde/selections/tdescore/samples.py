@@ -37,7 +37,7 @@ def export_thermal_selection(df: pd.DataFrame, window: float, group_id: int):
     """
     df_cut = selection_thermal(df, window=window)
     print(f"Exporting {len(df_cut)} sources to SkyPortal with group_id {group_id} and window {window} days")
-    export_to_skyportal(df_cut, group_id=group_id)
+    export_to_skyportal(df_cut, group_ids=[group_id])
 
 
 def selection_cut(df: pd.DataFrame, key: str, min_age: float | None = None, max_age: float | None = None) -> pd.DataFrame:
@@ -71,7 +71,7 @@ def export_cut_selection(df: pd.DataFrame, key: str, group_id: int, min_age: flo
               f"SkyPortal with group_id {group_id} and key {key}")
 
         print(df_cut[["ztf_name", "age"]])
-        export_to_skyportal(df_cut, group_id=group_id)
+        export_to_skyportal(df_cut, group_ids=[group_id])
 
 
 thermal_export_map = {

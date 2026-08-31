@@ -14,16 +14,20 @@ from scantde.selections.tdescore.apply import apply_tdescore
 from scantde.selections.nohostinfo.apply import apply_tdescore_nohostinfo
 from scantde.selections.offnuclear.apply import apply_tdescore_offnuclear
 from scantde.paths import base_html_dir
+from scantde.followup import sedm_assignment, get_candidate_summary
 
 logger = logging.getLogger(__name__)
+
+FOLLOWUP_SLACK_CHANNEL = "tdescore-dev"
 
 
 def run_night(datestr: str | None, skip_lightcurve: bool = False, debug: bool = False):
     """
     Run the TDEScore integration for a single date
     """
+    today = get_current_datestr()
     if datestr is None:
-        datestr = get_current_datestr()
+        datestr: str = today
 
     if (not debug) & (not skip_lightcurve):
         # Remove the nightly file to force a re-download
@@ -57,31 +61,35 @@ def run_night(datestr: str | None, skip_lightcurve: bool = False, debug: bool = 
     df.reset_index(drop=True, inplace=True)
 
     if debug:
-        df = df[:2000]
+        df = df[:100]
 
     nightly_output_dir = base_html_dir / datestr
     nightly_output_dir.mkdir(parents=True, exist_ok=True)
 
     logger.info(f"Running TDEScore integration for {datestr}")
 
-    # Apply tdescore (classic)
-    proc_df = apply_tdescore(df.copy(), base_output_dir=nightly_output_dir)
-
-    # Do not repeat lightcurve analysis for already processed sources
-    if len(proc_df) > 0:
-        mask = df["ztf_name"].isin(proc_df["ztf_name"])
-        df.loc[mask, "tdescore_lc"] = True
-
-    # Apply tdescore (no host info)
-    proc_df = apply_tdescore_nohostinfo(df.copy(), base_output_dir=nightly_output_dir)
-
-    # Do not repeat lightcurve analysis for already processed sources
-    if len(proc_df) > 0:
-        mask = df["ztf_name"].isin(proc_df["ztf_name"])
-        df.loc[mask, "tdescore_lc"] = True
+    # # Apply tdescore (classic)  # FIXME
+    # proc_df = apply_tdescore(df.copy(), base_output_dir=nightly_output_dir)
+    #
+    # # Do not repeat lightcurve analysis for already processed sources
+    # if len(proc_df) > 0:
+    #     mask = df["ztf_name"].isin(proc_df["ztf_name"])
+    #     df.loc[mask, "tdescore_lc"] = True
+    #
+    # # Apply tdescore (no host info)
+    # proc_df = apply_tdescore_nohostinfo(df.copy(), base_output_dir=nightly_output_dir)
+    #
+    # # Do not repeat lightcurve analysis for already processed sources
+    # if len(proc_df) > 0:
+    #     mask = df["ztf_name"].isin(proc_df["ztf_name"])
+    #     df.loc[mask, "tdescore_lc"] = True
 
     # Apply tdescore (offnuclear)
     apply_tdescore_offnuclear(df.copy(), base_output_dir=nightly_output_dir)
+
+    if datestr == today:
+        get_candidate_summary(datestr, slack_channel=FOLLOWUP_SLACK_CHANNEL, lookback_days=7)
+        sedm_assignment(datestr, slack_channel=FOLLOWUP_SLACK_CHANNEL, lookback_days=1)
 
 
 def run():

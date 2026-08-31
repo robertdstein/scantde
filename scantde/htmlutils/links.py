@@ -22,7 +22,7 @@ def make_page_links(row: pd.Series) -> str:
     page_links = f"""
     [<a href="https://fritz.science/source/{name}" target="_blank">Fritz (Source Page)</a>]
     &nbsp;&nbsp;&nbsp;&nbsp;
-    [<a href="https://fritz.science/alerts/ztf/{name}" target="_blank">Fritz (Alert Page)</a>]
+    [<a href="https://babamul.caltech.edu/objects/ZTF/{name}" target="_blank">Bababuml (Source Page)</a>]
     &nbsp;&nbsp;&nbsp;&nbsp;
     """
 
@@ -31,7 +31,7 @@ def make_page_links(row: pd.Series) -> str:
     if pd.notnull(tns_name):
         tns_name = strip_tns_name(tns_name)
         page_links += (
-            f' [TNS: <a href="https://wis-tns.weizmann.ac.il/object/{tns_name}" target="_blank">'
+            f' [TNS: <a href="https://www.wis-tns.org/object/{tns_name}" target="_blank">'
             f"AT{tns_name}</a>] &nbsp;&nbsp;&nbsp;&nbsp;"
         )
     return page_links

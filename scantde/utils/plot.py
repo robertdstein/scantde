@@ -47,6 +47,9 @@ def create_lightcurve_plots(source_table: pd.DataFrame, base_output_dir: Path):
             1: "green",
             2: "red",
             3: "orange",
+            -1: "blue",
+            -2: "brown",
+            -3: "black"
         }
         raw_df = apply_extinction_correction(raw_df)
 
@@ -63,19 +66,18 @@ def create_lightcurve_plots(source_table: pd.DataFrame, base_output_dir: Path):
             )
 
         try:
-            redshift = row[f"{default_catalog}_z_spec"] if row[f"{default_catalog}_z_spec"] > 0 \
-                else row[f"{default_catalog}_z_phot_median"]
-            label = "spec" if row[f"{default_catalog}_z_spec"] > 0 else "phot"
+            redshift = row["zspec"] if row["zspec"] > 0 else row["zphot"]
+            label = str(row["zorigin"])
         except KeyError:
             redshift = -99.
             label = "none"
 
-        if label == "phot":
+        if not "spec" in label.lower():
             if pd.notnull(row["skyportal_redshift"]):
                 if row["skyportal_redshift"] > 0:
                     # Use skyportal redshift if available
                     redshift = row["skyportal_redshift"]
-                    label = "fritz_"
+                    label = "fritz_z"
 
         if redshift > 0:
             # Calculate the luminosity distance in parsecs
@@ -97,7 +99,7 @@ def create_lightcurve_plots(source_table: pd.DataFrame, base_output_dir: Path):
                     fmt="o",
                     markersize=2,
                 )
-            ax2.set_ylabel(f"Ab Mag [AB] ({label}z={redshift:.2f})")
+            ax2.set_ylabel(f"Ab Mag [AB] ({label}={redshift:.2f})")
 
         ax.set_xlabel("Days Ago")
         ax.set_ylabel("Mag [AB]")

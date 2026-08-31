@@ -137,13 +137,6 @@ def make_daily_html_table(
     :param classifiers: list[str] Classifiers to use
     :return: str HTML
     """
-    datestr = output_dir.name
-
-    base_html_header(
-        source_table,
-    )
-
-    # html_header = make_html_daily_header(datestr, source_table, output_path)
     html_header = base_html_header(
         source_table,
     )

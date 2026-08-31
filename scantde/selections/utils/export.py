@@ -12,6 +12,7 @@ from scantde.selections.utils.tag_dwarf import tag_dwarf
 from scantde.utils.sync import rsync_data
 from scantde.utils.cutouts import batch_create_cutouts
 from scantde.selections.utils.relabel import relabel_fields
+from tdescore.combine.boom.all import parse_all_sources_boom
 
 
 def export_results(df: pd.DataFrame, datestr: str, selection: str) -> pd.DataFrame:
@@ -26,10 +27,11 @@ def export_results(df: pd.DataFrame, datestr: str, selection: str) -> pd.DataFra
     """
 
     full_df = combine_all_sources(df, save=False)
+    full_df = parse_all_sources_boom(full_df)
 
     thermal_df = relabel_fields(full_df)
     df = df.join(thermal_df, how="left", on="ztf_name")
-    df["n_predets"] = df["ndethist"] - df["thermal_n_detections"]
+    df["n_predets"] = full_df["ndethist"] - df["thermal_n_detections"]
 
     df = tag_dwarf(df)
 

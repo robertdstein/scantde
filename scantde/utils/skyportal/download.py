@@ -137,3 +137,4 @@ def get_skyportal_data(
     sky_df.set_index("ztf_name", inplace=True)
     join = sources.join(sky_df, on="ztf_name", how="left")
     return join
+

@@ -20,6 +20,7 @@ def search_by_date() -> str:
     datestr = date.replace('-', '')
     num_days = int(request.args.get('lookback_days', "1").strip())
     min_score = float(request.args.get('min_score', 0.01).strip())
+    min_age = float(request.args.get('min_age', 0.0).strip())
     hide_junk = bool(request.args.get('hide_junk'))
     hide_classified = bool(request.args.get('hide_classified', False))
     mode = request.args.get('mode', 'all')
@@ -31,6 +32,7 @@ def search_by_date() -> str:
         html = generate_html_by_date(
             datestr, selection=selection, lookback_days=num_days,
             min_score=min_score,
+            min_age=min_age,
             hide_junk=hide_junk,
             hide_classified=hide_classified,
             mode=mode, include_cutout=show_cutout
@@ -38,4 +40,4 @@ def search_by_date() -> str:
     except MissingCacheError:
         error = f"No cached results found for {date}. Please try a different date."
 
-    return render_template_string(html, today=date, lookback_days=num_days, min_score=min_score, hide_junk=hide_junk, hide_classified=hide_classified, error=error, mode=mode, selection=selection, show_cutout=show_cutout)
+    return render_template_string(html, today=date, lookback_days=num_days, min_score=min_score, min_age=min_age, hide_junk=hide_junk, hide_classified=hide_classified, error=error, mode=mode, selection=selection, show_cutout=show_cutout)

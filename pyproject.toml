@@ -38,7 +38,7 @@ dependencies = [
     "photutils",
     "pytz",
     "sfdmap@git+https://github.com/robertdstein/sfdmap",
-    "tdescore@git+https://github.com/robertdstein/tdescore@v1.1.0",
+    "tdescore@git+https://github.com/robertdstein/tdescore@babamul",
     "xgboost>=2.1.0",
     "tqdm",
     "ztfquery",
@@ -50,7 +50,8 @@ dependencies = [
     "Flask-SQLAlchemy",
     "pydantic",
     "ztfquery",
-    "gunicorn"
+    "gunicorn",
+    "tabulate"
 ]
 [project.optional-dependencies]
 dev = [
@@ -71,3 +72,4 @@ profile = "black"
 scantde-run = "scantde.__main__:run"
 scantde-batch = "scantde.__main__:run_batch"
 scantde-server = "scantde.server.__main__:launch_server"
+scantde-summary = "scantde.followup.candidates:main"
