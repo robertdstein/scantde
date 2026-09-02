@@ -6,6 +6,7 @@ from scantde.io import load_combined
 from scantde.followup.slack import BASE_COLS
 
 MAX_REDSHIFT = 0.05
+MAX_AGE = 30.0
 
 AUTO_MAX_AGE = 14.0
 AUTO_MIN_SCORE = 0.0
@@ -23,10 +24,8 @@ def apply_infant_cut(df: pd.DataFrame) -> pd.DataFrame:
     mask = (
         (df["zspec"] > 0.00)
         & (df["zspec"] < MAX_REDSHIFT)
-        & ( # Repeating TDEs or unclassified please
-                pd.isnull(df["skyportal_class"])
-                | (df["skyportal_class"] == "Tidal Disruption Event")
-        )
+        & pd.isnull(df["skyportal_class"])
+        & (df["age"] < MAX_AGE)
     )
     df = df[mask].reset_index(drop=True)
     df = batch_check_spec(df)
