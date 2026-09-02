@@ -68,9 +68,6 @@ def apply_soar_cuts(df: pd.DataFrame) -> pd.DataFrame:
 
     df = batch_check_spec(df)
 
-    # Apply SOAR cuts
-    mask = ~df["has_spec?"]
-
     df = df[mask].reset_index(drop=True)
 
     df["soar_auto"] = (
@@ -78,6 +75,7 @@ def apply_soar_cuts(df: pd.DataFrame) -> pd.DataFrame:
         & (df["age"] > AUTO_AGE_SOAR)
         & (df["magpsf"] < AUTO_MAG_SOAR)
         & (df["tdescore"] > AUTO_SCORE_SOAR)
+        & (~df["has_spec?"])
     )
 
     return df
@@ -85,7 +83,7 @@ def apply_soar_cuts(df: pd.DataFrame) -> pd.DataFrame:
 
 def soar_assignment(datestr: str, slack_channel: str, lookback_days: int = 1):
     """
-    Assign SEDm follow-up to unclassified likely-real sources
+    Assign SOAR follow-up to unclassified likely-real sources
     and send a summary to Slack
 
     :param datestr: Date string in YYYYMMDD format
