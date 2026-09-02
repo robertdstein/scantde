@@ -123,28 +123,28 @@ def export_to_skyportal(sources: pd.DataFrame, group_ids: list[int] | None = Non
                     )
                     continue
 
-                res = response.json()["data"]["redshift"]
-
-                if res is None:
-                    # Export redshift data to SkyPortal
-                    response = client.api(
-                        "patch",
-                        endpoint=f"sources/{row['ztf_name']}",
-                        data={
-                            "redshift": float(f"{specz:.2f}"),
-                            "redshift_origin": row["zorigin"],
-                        },
-                    )
-                    if not response.json()["status"] == "success":
-                        logger.error(
-                            f"Failed to save redshift {row['ztf_name']} "
-                            f"on SkyPortal with error: {response.json()}"
-                        )
-                    else:
-                        logger.info(
-                            f"Saved redshift {row['ztf_name']} "
-                            f"on SkyPortal with value {specz}"
-                        )
+                # res = response.json()["data"]["redshift"]
+                #
+                # if res is None:
+                #     # Export redshift data to SkyPortal
+                #     response = client.api(
+                #         "patch",
+                #         endpoint=f"sources/{row['ztf_name']}",
+                #         data={
+                #             "redshift": float(f"{float(specz):.2f}"),
+                #             "redshift_origin": row["zorigin"],
+                #         },
+                #     )
+                #     if not response.json()["status"] == "success":
+                #         logger.error(
+                #             f"Failed to save redshift {row['ztf_name']} "
+                #             f"on SkyPortal with error: {response.json()}"
+                #         )
+                #     else:
+                #         logger.info(
+                #             f"Saved redshift {row['ztf_name']} "
+                #             f"on SkyPortal with value {specz}"
+                #         )
 
             except (ConnectionError, RetryError, MaxRetryError):
                 logger.error(f"Failed to save redshift {row['ztf_name']} on SkyPortal")
