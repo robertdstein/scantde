@@ -14,11 +14,11 @@ from scantde.selections.tdescore.apply import apply_tdescore
 from scantde.selections.nohostinfo.apply import apply_tdescore_nohostinfo
 from scantde.selections.offnuclear.apply import apply_tdescore_offnuclear
 from scantde.paths import base_html_dir
-from scantde.followup import sedm_assignment, get_candidate_summary
+from scantde.followup import sedm_assignment, get_candidate_summary, soar_assignment
 
 logger = logging.getLogger(__name__)
 
-FOLLOWUP_SLACK_CHANNEL = "tdescore-dev"
+FOLLOWUP_SLACK_CHANNEL = "tdescore-followup"
 
 
 def run_night(datestr: str | None, skip_lightcurve: bool = False, debug: bool = False):
@@ -90,6 +90,7 @@ def run_night(datestr: str | None, skip_lightcurve: bool = False, debug: bool = 
     if datestr == today:
         get_candidate_summary(datestr, slack_channel=FOLLOWUP_SLACK_CHANNEL, lookback_days=7)
         sedm_assignment(datestr, slack_channel=FOLLOWUP_SLACK_CHANNEL, lookback_days=1)
+        soar_assignment(datestr, slack_channel="tdescore-soar", lookback_days=1)
 
 
 def run():
