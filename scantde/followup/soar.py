@@ -69,6 +69,7 @@ def apply_soar_cuts(df: pd.DataFrame) -> pd.DataFrame:
     df = batch_check_spec(df)
 
     df = df[mask].reset_index(drop=True)
+    df.sort_values(by=["tdescore"], ascending=False, inplace=True)
 
     df["soar_auto"] = (
         (df["soar_airmass"] < AUTO_AIRMASS_SOAR)

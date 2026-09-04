@@ -90,7 +90,7 @@ def run_night(datestr: str | None, skip_lightcurve: bool = False, debug: bool = 
     if datestr == today:
         get_candidate_summary(datestr, slack_channel=FOLLOWUP_SLACK_CHANNEL, lookback_days=7)
         sedm_assignment(datestr, slack_channel=FOLLOWUP_SLACK_CHANNEL, lookback_days=1)
-        soar_assignment(datestr, slack_channel="tdescore-soar", lookback_days=1)
+        soar_assignment(datestr, slack_channel="tdescore-soar", lookback_days=7)
         infant_assignment(datestr, slack_channel="tdescore-infant", lookback_days=1)
 
 def run():
